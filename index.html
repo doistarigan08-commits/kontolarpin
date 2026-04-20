@@ -162,29 +162,51 @@ th{opacity:.6;text-align:left}
 
 <script>
 
-<script>
+const BASE = "/api/proxy";
 
-const BASE = "https://kontolarpin.vercel.app/api/proxy";
-
-/* AMBIL DATA */
+/* =========================
+   AMBIL DATA (ANTI ERROR)
+========================= */
 async function getData(){
     try{
-        const res = await fetch(BASE + "?type=data&t=" + Date.now());
-        const data = await res.json();
+        const res = await fetch(BASE + "?type=data&t=" + Date.now(), {
+            cache: "no-store"
+        });
+
+        const text = await res.text();
+
+        console.log("RAW:", text);
+
+        // ambil JSON walaupun ada HTML / error text
+        const match = text.match(/\[[\s\S]*\]/);
+
+        if(!match){
+            console.log("JSON NOT FOUND");
+            return [];
+        }
+
+        const data = JSON.parse(match[0]);
 
         console.log("DATA:", data);
 
         return Array.isArray(data) ? data : [];
 
     }catch(e){
-        console.log("ERROR GET:", e);
+        console.log("GET ERROR:", e);
         return [];
     }
 }
 
-/* RENDER FIX TOTAL */
+/* =========================
+   RENDER DATA
+========================= */
 async function render(){
     const list = document.getElementById("list");
+
+    if(!list){
+        console.log("ELEMENT #list NOT FOUND");
+        return;
+    }
 
     const data = await getData();
 
@@ -195,55 +217,81 @@ async function render(){
         return;
     }
 
+    let html = "";
+
     data.forEach(v=>{
-        list.innerHTML += `
+        const email = v.email || "-";
+        const limit = v.jumlahResult ?? 0;
+
+        html += `
         <tr class="row">
-            <td>${v.email}</td>
+            <td>${email}</td>
             <td class="center">
-                <span class="badge">${v.jumlahResult}</span>
+                <span class="badge">${limit}</span>
             </td>
             <td class="center">
-                <button class="danger" onclick="del('${encodeURIComponent(v.email)}')">Del</button>
+                <button class="danger" onclick="del('${encodeURIComponent(email)}')">Del</button>
             </td>
         </tr>`;
     });
+
+    list.innerHTML = html;
 }
 
-/* ADD */
+/* =========================
+   ADD EMAIL
+========================= */
 async function addEmail(){
     const email = document.getElementById("email").value;
     const limit = document.getElementById("limit").value;
 
-    if(!email) return;
+    if(!email){
+        alert("Isi email dulu");
+        return;
+    }
 
-    const fd = new FormData();
-    fd.append("email", email);
-    fd.append("jumlahResult", limit);
+    try{
+        const fd = new FormData();
+        fd.append("email", email);
+        fd.append("jumlahResult", limit);
 
-    await fetch(BASE + "?type=add", {
-        method:"POST",
-        body:fd
-    });
+        await fetch(BASE + "?type=add", {
+            method: "POST",
+            body: fd
+        });
 
-    document.getElementById("email").value = "";
+        document.getElementById("email").value = "";
 
-    render();
+        render();
+
+    }catch(e){
+        console.log("ADD ERROR:", e);
+    }
 }
 
-/* DELETE */
+/* =========================
+   DELETE EMAIL
+========================= */
 async function del(email){
-    const fd = new FormData();
-    fd.append("email", decodeURIComponent(email));
+    try{
+        const fd = new FormData();
+        fd.append("email", decodeURIComponent(email));
 
-    await fetch(BASE + "?type=delete", {
-        method:"POST",
-        body:fd
-    });
+        await fetch(BASE + "?type=delete", {
+            method: "POST",
+            body: fd
+        });
 
-    render();
+        render();
+
+    }catch(e){
+        console.log("DELETE ERROR:", e);
+    }
 }
 
-/* REALTIME (LEBIH STABIL) */
+/* =========================
+   AUTO REALTIME
+========================= */
 setInterval(render, 3000);
 
 /* INIT */
