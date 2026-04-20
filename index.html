@@ -217,7 +217,7 @@ function render(){
    ADD EMAIL (BLACKLIST CHECK)
 ========================= */
 async function addEmail(){
-    const email = document.getElementById("email").value;
+    const email = document.getElementById("email").value.trim();
     const limit = document.getElementById("limit").value;
 
     if(!email) return alert("isi email");
@@ -226,22 +226,38 @@ async function addEmail(){
     fd.append("email", email);
     fd.append("jumlahResult", limit);
 
-    const res = await fetch(BASE+"?type=add",{
-        method:"POST",
-        body:fd
-    });
+    try{
 
-    const data = await res.json();
+        const res = await fetch(BASE+"?type=add",{
+            method:"POST",
+            body:fd
+        });
 
-    if(data.success === false){
-        alert(data.message || "Blocked");
-        return;
+        const text = await res.text(); // 🔥 jangan langsung json
+
+        let data;
+
+        try {
+            data = JSON.parse(text); // coba parse
+        } catch (e) {
+            console.log("RAW RESPONSE:", text);
+            return alert("Server error / response bukan JSON");
+        }
+
+        if(data.success === false){
+            alert(data.message || "Blocked / Invalid Email");
+            return;
+        }
+
+        currentData.unshift({email, jumlahResult:limit});
+        render();
+
+        document.getElementById("email").value = "";
+
+    }catch(err){
+        console.log("ERROR:", err);
+        alert("Gagal konek ke server");
     }
-
-    currentData.unshift({email, jumlahResult:limit});
-    render();
-
-    document.getElementById("email").value = "";
 }
 
 /* =========================
