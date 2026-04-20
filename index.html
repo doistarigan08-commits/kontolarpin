@@ -134,8 +134,9 @@ th{opacity:.6;text-align:left}
 <div class="wrap">
 
     <div class="card">
-        <h2>iOS Panel Realtime</h2>
+        <h2>PANEL DOISXBILXZ</h2>
         <small>Dev : DoisXhosting</small>
+        <small>No : 0895328913141</small>
 
         <input id="email" placeholder="email@gmail.com">
         <input id="limit" type="number" value="100">
@@ -273,20 +274,23 @@ async function addEmail(){
    DELETE EMAIL
 ========================= */
 async function del(email){
-    try{
-        const fd = new FormData();
-        fd.append("email", decodeURIComponent(email));
+    const row = event.target.closest("tr"); // ambil row
 
-        await fetch(BASE + "?type=delete", {
-            method: "POST",
-            body: fd
-        });
+    // animasi hilang
+    row.style.opacity = "0";
+    row.style.transform = "translateX(20px)";
 
-        render();
+    setTimeout(()=> row.remove(), 300);
 
-    }catch(e){
-        console.log("DELETE ERROR:", e);
-    }
+    const fd = new FormData();
+    fd.append("email", decodeURIComponent(email));
+
+    await fetch("/api/proxy?type=delete", {
+        method:"POST",
+        body:fd
+    });
+
+    render(); // sync ulang
 }
 
 /* =========================
