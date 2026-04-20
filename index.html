@@ -163,15 +163,13 @@ async function getData(){
         const res = await fetch(BASE + "?type=data&t=" + Date.now());
         const text = await res.text();
 
-        console.log("RAW:", text);
-
         const match = text.match(/\[[\s\S]*\]/);
         if(!match) return [];
 
         return JSON.parse(match[0]);
 
     }catch(e){
-        console.log("GET ERROR:", e);
+        console.log(e);
         return [];
     }
 }
@@ -212,7 +210,7 @@ function render(){
 }
 
 /* =========================
-   ADD EMAIL (FIXED)
+   ADD (FIXED)
 ========================= */
 async function addEmail(){
 
@@ -221,28 +219,25 @@ async function addEmail(){
 
     if(!email) return alert("isi email");
 
-    let fd = new FormData();
-    fd.append("email", email);
-    fd.append("jumlahResult", limit);
+    const body = `email=${encodeURIComponent(email)}&jumlahResult=${encodeURIComponent(limit)}`;
 
     try{
 
         const res = await fetch(BASE+"?type=add",{
             method:"POST",
-            body:fd
+            headers:{
+                "Content-Type":"application/x-www-form-urlencoded"
+            },
+            body: body
         });
 
         const text = await res.text();
 
-        console.log("RAW ADD:", text);
-
         let data;
-
-        try {
+        try{
             data = JSON.parse(text);
-        } catch (e) {
-            console.log("PARSE ERROR:", text);
-            return alert("Server error (bukan JSON)");
+        }catch(e){
+            return alert("server error");
         }
 
         if(data.success === false){
@@ -254,14 +249,13 @@ async function addEmail(){
 
         document.getElementById("email").value = "";
 
-    }catch(err){
-        console.log(err);
+    }catch(e){
         alert("request gagal");
     }
 }
 
 /* =========================
-   DELETE
+   DELETE (FIXED)
 ========================= */
 function del(email){
 
@@ -270,19 +264,20 @@ function del(email){
     currentData = currentData.filter(v => v.email !== email);
     render();
 
-    let fd = new FormData();
-    fd.append("email", email);
+    const body = `email=${encodeURIComponent(email)}`;
 
     fetch(BASE+"?type=delete",{
         method:"POST",
-        body:fd
+        headers:{
+            "Content-Type":"application/x-www-form-urlencoded"
+        },
+        body: body
     });
 }
 
 /* INIT */
 loadAwal();
 
-/* particles */
 particlesJS("particles-js",{
     particles:{
         number:{value:40},
