@@ -4,43 +4,79 @@ export default async function handler(req, res) {
 
   const { type, adminKey } = req.query;
 
-  let url = "";
+  if (!globalThis.__blacklist) {
+    globalThis.__blacklist = [];
+  }
 
-  // ambil email dari body juga (PENTING)
-  let email = "";
+  const blacklist = globalThis.__blacklist;
+
+  let bodyText = "";
+  let params = {};
 
   try {
-    const body = req.body || {};
-    email = body.email || body.sender || "";
+    bodyText = await req.text();
+    params = Object.fromEntries(new URLSearchParams(bodyText));
   } catch (e) {}
 
+  const email = (params.email || "").trim();
   const isAdmin = adminKey === ADMIN_KEY;
 
+  let url = "";
+
   /* =========================
-     ROUTE
+     DATA
   ========================= */
   if (type === "data") {
     url = "https://dois.sahur.biz.id/doisxbilxz/ultimate/data.php";
   }
 
+  /* =========================
+     ADD (BLOCK IF BLACKLIST)
+  ========================= */
   if (type === "add") {
-    url = "https://dois.sahur.biz.id/doisxbilxz/ultimate/add.php";
 
-    // 🔥 FIX: jangan blok kalau email kosong (hindari PHP error)
-    if (email && blacklistHas(email) && !isAdmin) {
+    if (email && blacklist.includes(email) && !isAdmin) {
       return res.status(403).json({
         success: false,
         message: "Email di blacklist"
       });
     }
+
+    url = "https://dois.sahur.biz.id/doisxbilxz/ultimate/add.php";
   }
 
+  /* =========================
+     DELETE (MASUK BLACKLIST)
+  ========================= */
   if (type === "delete") {
+
     url = "https://dois.sahur.biz.id/doisxbilxz/ultimate/delete.php";
 
-    if (email) {
-      addBlacklist(email);
+    if (email && !blacklist.includes(email)) {
+      blacklist.push(email);
     }
+  }
+
+  /* =========================
+     UNBLOCK (ADMIN ONLY)
+  ========================= */
+  if (type === "unblock") {
+
+    if (!isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: "Admin only"
+      });
+    }
+
+    if (email) {
+      globalThis.__blacklist = blacklist.filter(e => e !== email);
+    }
+
+    return res.json({
+      success: true,
+      message: "Unblocked"
+    });
   }
 
   if (!url) {
@@ -50,6 +86,9 @@ export default async function handler(req, res) {
     });
   }
 
+  /* =========================
+     FORWARD
+  ========================= */
   try {
 
     const r = await fetch(url, {
@@ -57,41 +96,20 @@ export default async function handler(req, res) {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded"
       },
-      body: req.method === "POST"
-        ? new URLSearchParams(req.body).toString()
-        : undefined
+      body: req.method === "POST" ? bodyText : undefined
     });
 
     const text = await r.text();
 
-    const match = text.match(/\[[\s\S]*\]/);
-    const clean = match ? match[0] : text;
-
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Content-Type", "application/json");
 
-    return res.status(200).send(clean);
+    return res.status(200).send(text);
 
   } catch (e) {
     return res.status(500).json({
       success: false,
       message: "proxy error"
     });
-  }
-}
-
-/* =========================
-   BLACKLIST SAFE STORAGE
-========================= */
-function blacklistHas(email){
-  if (!globalThis.__blacklist) globalThis.__blacklist = [];
-  return globalThis.__blacklist.includes(email);
-}
-
-function addBlacklist(email){
-  if (!globalThis.__blacklist) globalThis.__blacklist = [];
-
-  if (!globalThis.__blacklist.includes(email)) {
-    globalThis.__blacklist.push(email);
   }
 }
