@@ -1,14 +1,69 @@
-export default async function handler(req, res) {
+import { request } from "undici";
 
-  const BASE = "https://dois.sahur.biz.id/doisxbilxz/ultimate";
+export const config = {
+  runtime: "nodejs"
+};
 
-  const map = {
-    data: "/data.php",
-    add: "/add.php",
-    delete: "/delete.php",
-    ganti: "/ganti.php"
+const BASE = "https://dois.sahur.biz.id/doisxbilxz/ultimate";
+
+const map = {
+  data: "/data.php",
+  add: "/add.php",
+  delete: "/delete.php",
+  ganti: "/ganti.php"
+};
+
+// =========================
+// STREAM HELPER
+// =========================
+function streamToString(stream) {
+  return new Promise((resolve, reject) => {
+    let data = "";
+
+    stream.on("data", chunk => (data += chunk.toString("utf8")));
+    stream.on("end", () => resolve(data));
+    stream.on("error", reject);
+  });
+}
+
+// =========================
+// SPOOF HEADERS (BROWSER LIKE)
+// =========================
+function getSpoofHeaders() {
+  return {
+    "accept": "text/html,application/json;q=0.9,*/*;q=0.8",
+    "accept-language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+    "cache-control": "no-cache",
+    "pragma": "no-cache",
+    "sec-ch-ua": `"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"`,
+    "sec-ch-ua-mobile": "?1",
+    "sec-ch-ua-platform": `"Android"`,
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin",
+    "user-agent":
+      "Mozilla/5.0 (Linux; Android 13; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
+    "referer": BASE + "/",
+    "origin": BASE,
+    "connection": "keep-alive"
   };
+}
 
+// =========================
+// RETRY FETCH (ANTI DROP)
+// =========================
+async function safeRequest(url, options, retry = 2) {
+  try {
+    return await request(url, options);
+  } catch (err) {
+    if (retry > 0) {
+      return safeRequest(url, options, retry - 1);
+    }
+    throw err;
+  }
+}
+
+export default async function handler(req, res) {
   const type = req.query.type;
   const path = map[type];
 
@@ -19,15 +74,11 @@ export default async function handler(req, res) {
     });
   }
 
-  // =========================
-  // CLEAN URL (ANTI // BUG)
-  // =========================
-  const url = BASE.replace(/\/$/, "") + path;
+  const url = BASE + path;
 
   try {
-
     // =========================
-    // READ BODY SAFE STREAM
+    // READ RAW BODY (SAFE STREAM)
     // =========================
     let body = "";
 
@@ -38,29 +89,28 @@ export default async function handler(req, res) {
     }
 
     // =========================
-    // FETCH TO PHP BACKEND
+    // REQUEST (ANTI WAF SPOOF)
     // =========================
-    const response = await fetch(url, {
+    const { body: stream, statusCode } = await safeRequest(url, {
       method: req.method,
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Accept": "application/json,text/plain,*/*",
-        "Cache-Control": "no-cache",
-        "Pragma": "no-cache",
-        "Accept-Encoding": "identity"
+        ...getSpoofHeaders(),
+        "content-type": "application/x-www-form-urlencoded",
+        "content-length": body ? Buffer.byteLength(body) : undefined
       },
-      body: req.method === "POST" ? body : undefined
+      body: req.method === "POST" ? body : undefined,
+      maxRedirections: 5
     });
 
     // =========================
-    // GET RAW RESPONSE
+    // RAW RESPONSE
     // =========================
-    let text = await response.text();
+    let text = await streamToString(stream);
 
     console.log("RAW RESPONSE:", text);
 
     // =========================
-    // CLEAN HTML GARBAGE
+    // CLEAN HTML JUNK
     // =========================
     text = text.replace(/<[^>]*>/g, "").trim();
 
@@ -72,40 +122,27 @@ export default async function handler(req, res) {
     try {
       result = JSON.parse(text);
     } catch (e) {
-
-      // fallback array
       const arr = text.match(/\[[\s\S]*\]/);
       const obj = text.match(/\{[\s\S]*\}/);
 
-      if (arr) {
-        result = JSON.parse(arr[0]);
-      } else if (obj) {
-        result = JSON.parse(obj[0]);
-      } else {
-        result = [];
-      }
+      if (arr) result = JSON.parse(arr[0]);
+      else if (obj) result = JSON.parse(obj[0]);
+      else result = { raw: text };
     }
 
     // =========================
-    // FORCE NO CACHE RESPONSE
+    // RESPONSE HEADERS
     // =========================
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("X-Proxy-Mode", "ANTI-WAF-SPOOF");
 
-    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
-    res.setHeader("Pragma", "no-cache");
-    res.setHeader("Expires", "0");
-
-    return res.status(200).json(result);
+    return res.status(statusCode || 200).json(result);
 
   } catch (err) {
-
-    console.log("PROXY ERROR:", err);
-
     return res.status(500).json({
       success: false,
-      message: "Proxy Error",
+      message: "Anti-WAF Proxy Failed",
       error: err.message
     });
   }
