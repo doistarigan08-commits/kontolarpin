@@ -15,21 +15,14 @@ body{
     color:#fff;
 }
 
-/* particles */
 #particles-js{
     position:fixed;
     inset:0;
     z-index:-1;
 }
 
-/* layout */
-.wrap{
-    max-width:900px;
-    margin:auto;
-    padding:20px;
-}
+.wrap{max-width:900px;margin:auto;padding:20px;}
 
-/* card */
 .card{
     background:rgba(255,255,255,0.04);
     border:1px solid rgba(255,255,255,0.08);
@@ -37,12 +30,6 @@ body{
     padding:18px;
     margin:14px 0;
     animation:fade .4s ease;
-    transition:.25s;
-}
-
-.card:hover{
-    transform:translateY(-2px);
-    border-color:#4f7cff;
 }
 
 @keyframes fade{
@@ -50,10 +37,8 @@ body{
     to{opacity:1;transform:translateY(0)}
 }
 
-/* 🔥 INPUT ANIMATION (NO SHADOW) */
 input{
     width:100%;
-    box-sizing:border-box;
     padding:12px;
     margin-top:10px;
     border-radius:12px;
@@ -61,22 +46,13 @@ input{
     background:rgba(0,0,0,0.3);
     color:#fff;
     outline:none;
-    transition:.25s;
 }
 
-/* focus smooth tanpa shadow */
 input:focus{
     border-color:#4f7cff;
-    background:rgba(0,0,0,0.45);
     transform:scale(1.02);
 }
 
-/* typing animation feel */
-input:active{
-    transform:scale(0.99);
-}
-
-/* button */
 button{
     width:100%;
     padding:12px;
@@ -87,43 +63,21 @@ button{
     font-weight:600;
     background:linear-gradient(135deg,#4f7cff,#7aa8ff);
     color:#fff;
-    transition:.2s;
 }
-
-button:hover{transform:scale(1.02)}
-button:active{transform:scale(.96)}
 
 .danger{
     background:linear-gradient(135deg,#ff3b5c,#ff6a6a);
 }
 
-/* table */
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:10px;
-}
+table{width:100%;margin-top:10px;border-collapse:collapse;}
 
 th,td{
     padding:10px;
-    font-size:13px;
     border-bottom:1px solid rgba(255,255,255,0.05);
 }
 
-th{opacity:.6;text-align:left}
 .center{text-align:center}
-
-/* badge */
-.badge{
-    padding:4px 10px;
-    border-radius:10px;
-    background:rgba(255,255,255,0.06);
-}
-
-/* row anim */
-.row{
-    animation:fade .3s ease;
-}
+.badge{padding:4px 10px;background:#222;border-radius:8px;}
 </style>
 </head>
 
@@ -133,175 +87,140 @@ th{opacity:.6;text-align:left}
 
 <div class="wrap">
 
-    <div class="card">
-        <h2>PANEL DOISXBILXZ</h2>
-        <small>Dev : DoisXhosting</small>
-        <small>No : 0895328913141</small>
+<div class="card">
+<h2>PANEL DOISXBILXZ</h2>
 
-        <input id="email" placeholder="email@gmail.com">
-        <input id="limit" type="number" value="100">
+<input id="email" placeholder="email@gmail.com">
+<input id="limit" type="number" value="100">
+<input id="nick" placeholder="Nama Result">
 
-        <button onclick="addEmail()">Add Email</button>
-    </div>
+<button onclick="addEmail()">Add Email</button>
+</div>
 
-    <div class="card">
-        <h2>Database Live</h2>
+<div class="card">
+<h2>Database</h2>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Email</th>
-                    <th class="center">Limit</th>
-                    <th class="center">Action</th>
-                </tr>
-            </thead>
-            <tbody id="list"></tbody>
-        </table>
-    </div>
+<table>
+<thead>
+<tr>
+<th>Email</th>
+<th class="center">Limit</th>
+<th class="center">Action</th>
+</tr>
+</thead>
+<tbody id="list"></tbody>
+</table>
+
+</div>
 
 </div>
 
 <script>
-
 const BASE = "/api/proxy";
-
-/* =========================
-   STATE DATA (LOCAL)
-========================= */
 let currentData = [];
 
-/* =========================
-   AMBIL DATA AWAL (1x)
-========================= */
+/* GET DATA */
 async function getData(){
-    try{
-        const res = await fetch(BASE + "?type=data&t=" + Date.now(), {
-            cache: "no-store"
-        });
+    const res = await fetch(BASE+"?type=data&t="+Date.now());
+    const text = await res.text();
 
-        const text = await res.text();
+    const match = text.match(/\[[\s\S]*\]/);
+    if(!match) return [];
 
-        const match = text.match(/\[[\s\S]*\]/);
-        if(!match) return [];
-
-        const data = JSON.parse(match[0]);
-
-        return Array.isArray(data) ? data : [];
-
-    }catch(e){
-        console.log("GET ERROR:", e);
-        return [];
-    }
+    return JSON.parse(match[0]);
 }
 
-/* =========================
-   LOAD AWAL
-========================= */
-async function loadAwal(){
+/* LOAD */
+async function load(){
     currentData = await getData();
     render();
 }
 
-/* =========================
-   RENDER (PAKAI LOCAL)
-========================= */
+/* RENDER */
 function render(){
     const list = document.getElementById("list");
 
-    if(!list) return;
-
-    list.innerHTML = "";
-
-    if(currentData.length === 0){
-        list.innerHTML = `<tr><td colspan="3" class="center">No Data</td></tr>`;
+    if(currentData.length===0){
+        list.innerHTML="<tr><td colspan=3>No Data</td></tr>";
         return;
     }
 
-    let html = "";
+    let html="";
 
     currentData.forEach(v=>{
-        const email = v.email || "-";
-        const limit = v.jumlahResult ?? 0;
-
-        html += `
-        <tr class="row">
-            <td>${email}</td>
+        html+=`
+        <tr>
+            <td>${v.email}</td>
+            <td class="center">${v.jumlahResult}</td>
             <td class="center">
-                <span class="badge">${limit}</span>
-            </td>
-            <td class="center">
-                <button class="danger" onclick="del('${encodeURIComponent(email)}')">Del</button>
+                <button onclick="gantiNama('${encodeURIComponent(v.email)}')">Edit</button>
+                <button class="danger" onclick="del('${encodeURIComponent(v.email)}')">Del</button>
             </td>
         </tr>`;
     });
 
-    list.innerHTML = html;
+    list.innerHTML=html;
 }
 
-/* =========================
-   ADD EMAIL
-========================= */
+/* ADD */
 async function addEmail(){
-    const email = document.getElementById("email").value;
-    const limit = document.getElementById("limit").value;
+    const email = emailEl.value;
+    const limit = limitEl.value;
 
-    if(!email){
-        alert("Isi email dulu");
-        return;
+    if(!email) return alert("isi email");
+
+    if(currentData.some(v=>v.email===email)){
+        return alert("email sudah ada");
     }
 
-    // 🔥 tambah langsung ke UI
-    currentData.unshift({
-        email: email,
-        jumlahResult: limit
-    });
-
+    currentData.unshift({email, jumlahResult:limit});
     render();
 
-    try{
-        const fd = new FormData();
-        fd.append("email", email);
-        fd.append("jumlahResult", limit);
+    let fd=new FormData();
+    fd.append("email",email);
+    fd.append("jumlahResult",limit);
 
-        await fetch(BASE + "?type=add", {
-            method: "POST",
-            body: fd
-        });
-
-    }catch(e){
-        console.log("ADD ERROR:", e);
-    }
-
-    document.getElementById("email").value = "";
+    await fetch(BASE+"?type=add",{method:"POST",body:fd});
 }
 
-/* =========================
-   DELETE EMAIL
-========================= */
+/* DELETE */
 function del(email){
-
     email = decodeURIComponent(email);
 
-    // 🔥 hapus dari local
-    currentData = currentData.filter(v => v.email !== email);
+    let found=false;
+
+    currentData = currentData.filter(v=>{
+        if(!found && v.email===email){
+            found=true;
+            return false;
+        }
+        return true;
+    });
 
     render();
 
-    // kirim ke server (optional)
-    const fd = new FormData();
-    fd.append("email", email);
+    let fd=new FormData();
+    fd.append("email",email);
 
-    fetch(BASE + "?type=delete", {
-        method:"POST",
-        body:fd
-    });
+    fetch(BASE+"?type=delete",{method:"POST",body:fd});
 }
 
-/* =========================
-   INIT
-========================= */
-loadAwal();
+/* EDIT */
+async function gantiNama(email){
+    email = decodeURIComponent(email);
+    const nick = document.getElementById("nick").value;
 
+    if(!nick) return alert("isi nick");
+
+    await fetch(`${BASE}?type=ganti&nick=${encodeURIComponent(nick)}&sender=${encodeURIComponent(email)}`);
+
+    alert("Berhasil diubah");
+}
+
+load();
+
+/* particles */
+particlesJS("particles-js",{particles:{number:{value:40},color:{value:"#4f7cff"},size:{value:2},move:{speed:1}}});
 </script>
 
 </body>
