@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DOISXPANEL</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+<style>
+body{
+    margin:0;
+    font-family:Inter, sans-serif;
+    background:#070A12;
+    color:#fff;
+}
+
+/* particles */
+#particles-js{
+    position:fixed;
+    inset:0;
+    z-index:-1;
+}
+
+/* layout */
+.wrap{
+    max-width:900px;
+    margin:auto;
+    padding:20px;
+}
+
+/* card */
+.card{
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px;
+    padding:18px;
+    margin:14px 0;
+    animation:fade .4s ease;
+    transition:.25s;
+}
+
+.card:hover{
+    transform:translateY(-2px);
+    border-color:#4f7cff;
+}
+
+@keyframes fade{
+    from{opacity:0;transform:translateY(10px)}
+    to{opacity:1;transform:translateY(0)}
+}
+
+/* 🔥 INPUT ANIMATION (NO SHADOW) */
+input{
+    width:100%;
+    box-sizing:border-box;
+    padding:12px;
+    margin-top:10px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,0.08);
+    background:rgba(0,0,0,0.3);
+    color:#fff;
+    outline:none;
+    transition:.25s;
+}
+
+/* focus smooth tanpa shadow */
+input:focus{
+    border-color:#4f7cff;
+    background:rgba(0,0,0,0.45);
+    transform:scale(1.02);
+}
+
+/* typing animation feel */
+input:active{
+    transform:scale(0.99);
+}
+
+/* button */
+button{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    margin-top:10px;
+    cursor:pointer;
+    font-weight:600;
+    background:linear-gradient(135deg,#4f7cff,#7aa8ff);
+    color:#fff;
+    transition:.2s;
+}
+
+button:hover{transform:scale(1.02)}
+button:active{transform:scale(.96)}
+
+.danger{
+    background:linear-gradient(135deg,#ff3b5c,#ff6a6a);
+}
+
+/* table */
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+}
+
+th,td{
+    padding:10px;
+    font-size:13px;
+    border-bottom:1px solid rgba(255,255,255,0.05);
+}
+
+th{opacity:.6;text-align:left}
+.center{text-align:center}
+
+/* badge */
+.badge{
+    padding:4px 10px;
+    border-radius:10px;
+    background:rgba(255,255,255,0.06);
+}
+
+/* row anim */
+.row{
+    animation:fade .3s ease;
+}
+</style>
+</head>
+
+<body>
+
+<div id="particles-js"></div>
+
+<div class="wrap">
+
+    <div class="card">
+        <h2>iOS Panel Realtime</h2>
+        <small>Dev : DoisXhosting</small>
+
+        <input id="email" placeholder="email@gmail.com">
+        <input id="limit" type="number" value="100">
+
+        <button onclick="addEmail()">Add Email</button>
+    </div>
+
+    <div class="card">
+        <h2>Database Live</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th class="center">Limit</th>
+                    <th class="center">Action</th>
+                </tr>
+            </thead>
+            <tbody id="list"></tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+
+<script>
+
+/* 🔥 PAKAI DOMAIN KAMU */
+const BASE = "https://doisxbilpanel-j94d.vercel.app/api/proxy";
+
+/* GET DATA */
+async function getData(){
+    try{
+        const res = await fetch(BASE + "?type=data&t=" + Date.now());
+        const text = await res.text();
+
+        const match = text.match(/\[[\s\S]*\]/);
+        if(!match) return [];
+
+        return JSON.parse(match[0]);
+
+    }catch(e){
+        console.log("GET ERROR:", e);
+        return [];
+    }
+}
+
+/* RENDER FIX */
+async function render(){
+    const list = document.getElementById("list");
+    const data = await getData();
+
+    list.innerHTML = "";
+
+    if(!data || data.length === 0){
+        list.innerHTML = `<tr><td colspan="3" class="center">No Data</td></tr>`;
+        return;
+    }
+
+    data.forEach(v=>{
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>${v.email}</td>
+            <td class="center">${v.jumlahResult}</td>
+            <td class="center">
+                <button onclick="del('${v.email}')">Del</button>
+            </td>
+        `;
+
+        list.appendChild(tr);
+    });
+}
+
+/* ADD */
+async function addEmail(){
+    const email = document.getElementById("email").value;
+    const limit = document.getElementById("limit").value;
+
+    await fetch(BASE + "?type=add", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ email, jumlahResult: limit })
+    });
+
+    render();
+}
+
+/* DELETE */
+async function del(email){
+    await fetch(BASE + "?type=delete", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ email })
+    });
+
+    render();
+}
+
+/* realtime */
+setInterval(render, 2500);
+render();
+
+</script>
+
+</body>
+</html>
