@@ -2,53 +2,44 @@ export default async function handler(req, res) {
 
   const ADMIN_KEY = "DOIS-ADMIN-123";
 
-  const {
-    type,
-    email,
-    jumlahResult,
-    adminKey
-  } = req.query;
+  const { type, adminKey } = req.query;
 
   let url = "";
 
-  /* =========================
-     SIMPLE BLACKLIST MEMORY
-     (⚠️ reset kalau server restart)
-  ========================= */
-  if (!globalThis.__blacklist) {
-    globalThis.__blacklist = [];
-  }
+  // ambil email dari body juga (PENTING)
+  let email = "";
 
-  const blacklist = globalThis.__blacklist;
+  try {
+    const body = req.body || {};
+    email = body.email || body.sender || "";
+  } catch (e) {}
+
   const isAdmin = adminKey === ADMIN_KEY;
 
   /* =========================
-     ROUTING TYPE
+     ROUTE
   ========================= */
   if (type === "data") {
     url = "https://dois.sahur.biz.id/doisxbilxz/ultimate/data.php";
   }
 
   if (type === "add") {
+    url = "https://dois.sahur.biz.id/doisxbilxz/ultimate/add.php";
 
-    // 🚫 BLOCK kalau blacklist & bukan admin
-    if (email && blacklist.includes(email) && !isAdmin) {
+    // 🔥 FIX: jangan blok kalau email kosong (hindari PHP error)
+    if (email && blacklistHas(email) && !isAdmin) {
       return res.status(403).json({
         success: false,
         message: "Email di blacklist"
       });
     }
-
-    url = "https://dois.sahur.biz.id/doisxbilxz/ultimate/add.php";
   }
 
   if (type === "delete") {
-
     url = "https://dois.sahur.biz.id/doisxbilxz/ultimate/delete.php";
 
-    // 🔥 masuk blacklist
-    if (email && !blacklist.includes(email)) {
-      blacklist.push(email);
+    if (email) {
+      addBlacklist(email);
     }
   }
 
@@ -59,9 +50,6 @@ export default async function handler(req, res) {
     });
   }
 
-  /* =========================
-     FORWARD REQUEST
-  ========================= */
   try {
 
     const r = await fetch(url, {
@@ -76,7 +64,6 @@ export default async function handler(req, res) {
 
     const text = await r.text();
 
-    // ambil JSON dari response PHP
     const match = text.match(/\[[\s\S]*\]/);
     const clean = match ? match[0] : text;
 
@@ -88,7 +75,23 @@ export default async function handler(req, res) {
   } catch (e) {
     return res.status(500).json({
       success: false,
-      message: "Proxy error"
+      message: "proxy error"
     });
+  }
+}
+
+/* =========================
+   BLACKLIST SAFE STORAGE
+========================= */
+function blacklistHas(email){
+  if (!globalThis.__blacklist) globalThis.__blacklist = [];
+  return globalThis.__blacklist.includes(email);
+}
+
+function addBlacklist(email){
+  if (!globalThis.__blacklist) globalThis.__blacklist = [];
+
+  if (!globalThis.__blacklist.includes(email)) {
+    globalThis.__blacklist.push(email);
   }
 }
