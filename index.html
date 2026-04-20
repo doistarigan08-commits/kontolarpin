@@ -166,7 +166,12 @@ th{opacity:.6;text-align:left}
 const BASE = "/api/proxy";
 
 /* =========================
-   AMBIL DATA (ANTI ERROR)
+   STATE DATA (LOCAL)
+========================= */
+let currentData = [];
+
+/* =========================
+   AMBIL DATA AWAL (1x)
 ========================= */
 async function getData(){
     try{
@@ -176,19 +181,10 @@ async function getData(){
 
         const text = await res.text();
 
-        console.log("RAW:", text);
-
-        // ambil JSON walaupun ada HTML / error text
         const match = text.match(/\[[\s\S]*\]/);
-
-        if(!match){
-            console.log("JSON NOT FOUND");
-            return [];
-        }
+        if(!match) return [];
 
         const data = JSON.parse(match[0]);
-
-        console.log("DATA:", data);
 
         return Array.isArray(data) ? data : [];
 
@@ -199,28 +195,31 @@ async function getData(){
 }
 
 /* =========================
-   RENDER DATA
+   LOAD AWAL
 ========================= */
-async function render(){
+async function loadAwal(){
+    currentData = await getData();
+    render();
+}
+
+/* =========================
+   RENDER (PAKAI LOCAL)
+========================= */
+function render(){
     const list = document.getElementById("list");
 
-    if(!list){
-        console.log("ELEMENT #list NOT FOUND");
-        return;
-    }
-
-    const data = await getData();
+    if(!list) return;
 
     list.innerHTML = "";
 
-    if(data.length === 0){
+    if(currentData.length === 0){
         list.innerHTML = `<tr><td colspan="3" class="center">No Data</td></tr>`;
         return;
     }
 
     let html = "";
 
-    data.forEach(v=>{
+    currentData.forEach(v=>{
         const email = v.email || "-";
         const limit = v.jumlahResult ?? 0;
 
@@ -251,6 +250,14 @@ async function addEmail(){
         return;
     }
 
+    // 🔥 tambah langsung ke UI
+    currentData.unshift({
+        email: email,
+        jumlahResult: limit
+    });
+
+    render();
+
     try{
         const fd = new FormData();
         fd.append("email", email);
@@ -261,44 +268,39 @@ async function addEmail(){
             body: fd
         });
 
-        document.getElementById("email").value = "";
-
-        render();
-
     }catch(e){
         console.log("ADD ERROR:", e);
     }
+
+    document.getElementById("email").value = "";
 }
 
 /* =========================
    DELETE EMAIL
 ========================= */
-async function del(email){
-    const row = event.target.closest("tr"); // ambil row
+function del(email){
 
-    // animasi hilang
-    row.style.opacity = "0";
-    row.style.transform = "translateX(20px)";
+    email = decodeURIComponent(email);
 
-    setTimeout(()=> row.remove(), 300);
+    // 🔥 hapus dari local
+    currentData = currentData.filter(v => v.email !== email);
 
+    render();
+
+    // kirim ke server (optional)
     const fd = new FormData();
-    fd.append("email", decodeURIComponent(email));
+    fd.append("email", email);
 
-    await fetch("/api/proxy?type=delete", {
+    fetch(BASE + "?type=delete", {
         method:"POST",
         body:fd
     });
-
-    render(); // sync ulang
 }
 
 /* =========================
-   AUTO REALTIME
+   INIT
 ========================= */
-
-/* INIT */
-render();
+loadAwal();
 
 </script>
 
