@@ -1,56 +1,94 @@
 export default async function handler(req, res) {
 
-  const { type, nick, sender } = req.query;
+  const ADMIN_KEY = "DOIS-ADMIN-123";
+
+  const {
+    type,
+    email,
+    jumlahResult,
+    adminKey
+  } = req.query;
+
   let url = "";
 
+  /* =========================
+     SIMPLE BLACKLIST MEMORY
+     (⚠️ reset kalau server restart)
+  ========================= */
+  if (!globalThis.__blacklist) {
+    globalThis.__blacklist = [];
+  }
+
+  const blacklist = globalThis.__blacklist;
+  const isAdmin = adminKey === ADMIN_KEY;
+
+  /* =========================
+     ROUTING TYPE
+  ========================= */
   if (type === "data") {
     url = "https://dois.sahur.biz.id/doisxbilxz/ultimate/data.php";
   }
 
   if (type === "add") {
+
+    // 🚫 BLOCK kalau blacklist & bukan admin
+    if (email && blacklist.includes(email) && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: "Email di blacklist"
+      });
+    }
+
     url = "https://dois.sahur.biz.id/doisxbilxz/ultimate/add.php";
   }
 
   if (type === "delete") {
-    url = "https://dois.sahur.biz.id/doisxbilxz/ultimate/delete.php";
-  }
 
-  if (type === "ganti") {
-    url = `https://dois.sahur.biz.id/doisxbilxz/ultimate/ganti.php?nick=${encodeURIComponent(nick)}&sender=${encodeURIComponent(sender)}`;
+    url = "https://dois.sahur.biz.id/doisxbilxz/ultimate/delete.php";
+
+    // 🔥 masuk blacklist
+    if (email && !blacklist.includes(email)) {
+      blacklist.push(email);
+    }
   }
 
   if (!url) {
-    return res.status(400).json({ error: "invalid type" });
+    return res.status(400).json({
+      success: false,
+      message: "Invalid type"
+    });
   }
 
+  /* =========================
+     FORWARD REQUEST
+  ========================= */
   try {
-    const options = {
+
+    const r = await fetch(url, {
       method: req.method,
-      headers: {}
-    };
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: req.method === "POST"
+        ? new URLSearchParams(req.body).toString()
+        : undefined
+    });
 
-    if (req.method !== "GET") {
-      options.headers["Content-Type"] = "application/x-www-form-urlencoded";
-      options.body = new URLSearchParams(req.body).toString();
-    }
-
-    const r = await fetch(url, options);
     const text = await r.text();
 
-    let clean = text;
-
-    const arr = text.match(/\[[\s\S]*\]/);
-    const obj = text.match(/\{[\s\S]*\}/);
-
-    if (arr) clean = arr[0];
-    else if (obj) clean = obj[0];
+    // ambil JSON dari response PHP
+    const match = text.match(/\[[\s\S]*\]/);
+    const clean = match ? match[0] : text;
 
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Content-Type", "application/json");
 
-    res.status(200).send(clean);
+    return res.status(200).send(clean);
 
   } catch (e) {
-    res.status(500).json({ error: "proxy error" });
+    return res.status(500).json({
+      success: false,
+      message: "Proxy error"
+    });
   }
 }
