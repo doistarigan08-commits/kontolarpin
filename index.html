@@ -221,11 +221,11 @@ async function addEmail(){
 
     if(!email) return alert("isi email");
 
-    try{
+    let fd = new FormData();
+    fd.append("email", email);
+    fd.append("jumlahResult", limit);
 
-        let fd = new FormData();
-        fd.append("email", email);
-        fd.append("jumlahResult", limit);
+    try{
 
         const res = await fetch(BASE+"?type=add",{
             method:"POST",
@@ -234,18 +234,19 @@ async function addEmail(){
 
         const text = await res.text();
 
-        console.log("ADD RESPONSE:", text);
+        console.log("RAW ADD:", text);
 
         let data;
+
         try {
             data = JSON.parse(text);
         } catch (e) {
-            return alert("Server error / bukan JSON");
+            console.log("PARSE ERROR:", text);
+            return alert("Server error (bukan JSON)");
         }
 
         if(data.success === false){
-            alert(data.message || "Blocked");
-            return;
+            return alert(data.message);
         }
 
         currentData.unshift({email, jumlahResult:limit});
@@ -254,8 +255,8 @@ async function addEmail(){
         document.getElementById("email").value = "";
 
     }catch(err){
-        console.log("ERROR:", err);
-        alert("gagal konek server");
+        console.log(err);
+        alert("request gagal");
     }
 }
 
