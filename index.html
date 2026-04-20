@@ -21,7 +21,11 @@ body{
     z-index:-1;
 }
 
-.wrap{max-width:900px;margin:auto;padding:20px;}
+.wrap{
+    max-width:900px;
+    margin:auto;
+    padding:20px;
+}
 
 .card{
     background:rgba(255,255,255,0.04);
@@ -30,6 +34,12 @@ body{
     padding:18px;
     margin:14px 0;
     animation:fade .4s ease;
+    transition:.25s;
+}
+
+.card:hover{
+    transform:translateY(-2px);
+    border-color:#4f7cff;
 }
 
 @keyframes fade{
@@ -39,6 +49,7 @@ body{
 
 input{
     width:100%;
+    box-sizing:border-box;
     padding:12px;
     margin-top:10px;
     border-radius:12px;
@@ -46,11 +57,17 @@ input{
     background:rgba(0,0,0,0.3);
     color:#fff;
     outline:none;
+    transition:.25s;
 }
 
 input:focus{
     border-color:#4f7cff;
+    background:rgba(0,0,0,0.45);
     transform:scale(1.02);
+}
+
+input:active{
+    transform:scale(0.99);
 }
 
 button{
@@ -63,21 +80,40 @@ button{
     font-weight:600;
     background:linear-gradient(135deg,#4f7cff,#7aa8ff);
     color:#fff;
+    transition:.2s;
 }
+
+button:hover{transform:scale(1.02)}
+button:active{transform:scale(.96)}
 
 .danger{
     background:linear-gradient(135deg,#ff3b5c,#ff6a6a);
 }
 
-table{width:100%;margin-top:10px;border-collapse:collapse;}
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+}
 
 th,td{
     padding:10px;
+    font-size:13px;
     border-bottom:1px solid rgba(255,255,255,0.05);
 }
 
+th{opacity:.6;text-align:left}
 .center{text-align:center}
-.badge{padding:4px 10px;background:#222;border-radius:8px;}
+
+.badge{
+    padding:4px 10px;
+    border-radius:10px;
+    background:rgba(255,255,255,0.06);
+}
+
+.row{
+    animation:fade .3s ease;
+}
 </style>
 </head>
 
@@ -92,13 +128,12 @@ th,td{
 
 <input id="email" placeholder="email@gmail.com">
 <input id="limit" type="number" value="100">
-<input id="nick" placeholder="Nama Result">
 
 <button onclick="addEmail()">Add Email</button>
 </div>
 
 <div class="card">
-<h2>Database</h2>
+<h2>Database Live</h2>
 
 <table>
 <thead>
@@ -116,111 +151,139 @@ th,td{
 </div>
 
 <script>
+
+/* =========================
+   CONFIG
+========================= */
 const BASE = "/api/proxy";
+const ADMIN_KEY = "DOIS-ADMIN-123";
+
+/* =========================
+   STATE
+========================= */
 let currentData = [];
 
-/* GET DATA */
+/* =========================
+   GET DATA
+========================= */
 async function getData(){
-    const res = await fetch(BASE+"?type=data&t="+Date.now());
-    const text = await res.text();
+    try{
+        const res = await fetch(BASE + "?type=data&t=" + Date.now());
+        const text = await res.text();
 
-    const match = text.match(/\[[\s\S]*\]/);
-    if(!match) return [];
-
-    return JSON.parse(match[0]);
+        const match = text.match(/\[[\s\S]*\]/);
+        return match ? JSON.parse(match[0]) : [];
+    }catch(e){
+        return [];
+    }
 }
 
-/* LOAD */
-async function load(){
+/* =========================
+   LOAD
+========================= */
+async function loadAwal(){
     currentData = await getData();
     render();
 }
 
-/* RENDER */
+/* =========================
+   RENDER
+========================= */
 function render(){
     const list = document.getElementById("list");
 
-    if(currentData.length===0){
-        list.innerHTML="<tr><td colspan=3>No Data</td></tr>";
+    if(currentData.length === 0){
+        list.innerHTML = `<tr><td colspan="3" class="center">No Data</td></tr>`;
         return;
     }
 
-    let html="";
+    let html = "";
 
     currentData.forEach(v=>{
-        html+=`
-        <tr>
+        html += `
+        <tr class="row">
             <td>${v.email}</td>
-            <td class="center">${v.jumlahResult}</td>
+            <td class="center"><span class="badge">${v.jumlahResult}</span></td>
             <td class="center">
-                <button onclick="gantiNama('${encodeURIComponent(v.email)}')">Edit</button>
                 <button class="danger" onclick="del('${encodeURIComponent(v.email)}')">Del</button>
             </td>
         </tr>`;
     });
 
-    list.innerHTML=html;
+    list.innerHTML = html;
 }
 
-/* ADD */
+/* =========================
+   ADD EMAIL (BLACKLIST CHECK)
+========================= */
 async function addEmail(){
-    const email = emailEl.value;
-    const limit = limitEl.value;
+    const email = document.getElementById("email").value;
+    const limit = document.getElementById("limit").value;
 
     if(!email) return alert("isi email");
 
-    if(currentData.some(v=>v.email===email)){
-        return alert("email sudah ada");
+    let fd = new FormData();
+    fd.append("email", email);
+    fd.append("jumlahResult", limit);
+
+    const res = await fetch(BASE+"?type=add",{
+        method:"POST",
+        body:fd
+    });
+
+    const data = await res.json();
+
+    if(data.success === false){
+        alert(data.message || "Blocked");
+        return;
     }
 
     currentData.unshift({email, jumlahResult:limit});
     render();
 
-    let fd=new FormData();
-    fd.append("email",email);
-    fd.append("jumlahResult",limit);
-
-    await fetch(BASE+"?type=add",{method:"POST",body:fd});
+    document.getElementById("email").value = "";
 }
 
-/* DELETE */
+/* =========================
+   DELETE (masuk blacklist server)
+========================= */
 function del(email){
+
     email = decodeURIComponent(email);
 
-    let found=false;
-
-    currentData = currentData.filter(v=>{
-        if(!found && v.email===email){
-            found=true;
-            return false;
-        }
-        return true;
-    });
-
+    currentData = currentData.filter(v => v.email !== email);
     render();
 
-    let fd=new FormData();
-    fd.append("email",email);
+    let fd = new FormData();
+    fd.append("email", email);
 
-    fetch(BASE+"?type=delete",{method:"POST",body:fd});
+    fetch(BASE+"?type=delete",{
+        method:"POST",
+        body:fd
+    });
 }
 
-/* EDIT */
-async function gantiNama(email){
-    email = decodeURIComponent(email);
-    const nick = document.getElementById("nick").value;
-
-    if(!nick) return alert("isi nick");
-
-    await fetch(`${BASE}?type=ganti&nick=${encodeURIComponent(nick)}&sender=${encodeURIComponent(email)}`);
-
-    alert("Berhasil diubah");
-}
-
-load();
+/* =========================
+   INIT
+========================= */
+loadAwal();
 
 /* particles */
-particlesJS("particles-js",{particles:{number:{value:40},color:{value:"#4f7cff"},size:{value:2},move:{speed:1}}});
+particlesJS("particles-js",{
+    particles:{
+        number:{value:40},
+        color:{value:"#4f7cff"},
+        size:{value:2},
+        opacity:{value:0.3},
+        line_linked:{
+            enable:true,
+            distance:140,
+            color:"#4f7cff"
+        },
+        move:{speed:1}
+    }
+});
+
 </script>
 
 </body>
