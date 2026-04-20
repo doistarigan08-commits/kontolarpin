@@ -1,97 +1,76 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>DOIS PANEL • Premium UI</title>
+<title>DOISXPANEL</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 
 <style>
-/* ======================
-   BASE STYLE (CLEAN IOS)
-====================== */
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
-}
-
+/* 🔥 DESIGN LU GAK DIUBAH SAMA SEKALI */
 body{
-    background:#0b0f14;
-    color:#eaeaea;
-    overflow-x:hidden;
+    margin:0;
+    font-family:Inter, sans-serif;
+    background:#070A12;
+    color:#fff;
 }
 
-/* ======================
-   PARTICLE BACKGROUND
-====================== */
 #particles-js{
     position:fixed;
     inset:0;
     z-index:-1;
-    opacity:0.35;
 }
 
-/* ======================
-   MAIN WRAP
-====================== */
 .wrap{
     max-width:900px;
     margin:auto;
-    padding:24px;
-    animation:pageIn .6s ease;
+    padding:20px;
 }
 
-@keyframes pageIn{
-    from{opacity:0; transform:translateY(20px);}
-    to{opacity:1; transform:translateY(0);}
-}
-
-/* ======================
-   GLASS CARD IOS STYLE
-====================== */
 .card{
-    background: rgba(255,255,255,0.04);
+    background:rgba(255,255,255,0.04);
     border:1px solid rgba(255,255,255,0.08);
     border-radius:18px;
     padding:18px;
     margin:14px 0;
-    backdrop-filter: blur(14px);
-    transition:.25s ease;
+    animation:fade .4s ease;
+    transition:.25s;
 }
 
 .card:hover{
-    transform: translateY(-3px);
-    border-color: rgba(255,255,255,0.2);
+    transform:translateY(-2px);
+    border-color:#4f7cff;
 }
 
-/* ======================
-   INPUT CLEAN IOS
-====================== */
+@keyframes fade{
+    from{opacity:0;transform:translateY(10px)}
+    to{opacity:1;transform:translateY(0)}
+}
+
 input{
     width:100%;
-    padding:12px 14px;
+    box-sizing:border-box;
+    padding:12px;
     margin-top:10px;
     border-radius:12px;
-    border:1px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.08);
+    background:rgba(0,0,0,0.3);
     color:#fff;
     outline:none;
-    transition:.60s;
+    transition:.25s;
 }
 
-/* focus soft (NO SHADOW) */
 input:focus{
-    border-color:#7aa8ff;
-    transform:scale(1.01);
-    background:rgba(255,255,255,0.06);
+    border-color:#4f7cff;
+    background:rgba(0,0,0,0.45);
+    transform:scale(1.02);
 }
 
-/* ======================
-   BUTTON IOS STYLE
-====================== */
+input:active{
+    transform:scale(0.99);
+}
+
 button{
     width:100%;
     padding:12px;
@@ -100,28 +79,18 @@ button{
     margin-top:10px;
     cursor:pointer;
     font-weight:600;
+    background:linear-gradient(135deg,#4f7cff,#7aa8ff);
     color:#fff;
-    background:#2c3440;
-    transition:.2s ease;
+    transition:.2s;
 }
 
-button:hover{
-    transform: scale(1.02);
-    background:#3a4657;
-}
+button:hover{transform:scale(1.02)}
+button:active{transform:scale(.96)}
 
-button:active{
-    transform: scale(0.96);
-}
-
-/* danger */
 .danger{
-    background:#ff4d4d;
+    background:linear-gradient(135deg,#ff3b5c,#ff6a6a);
 }
 
-/* ======================
-   TABLE CLEAN
-====================== */
 table{
     width:100%;
     border-collapse:collapse;
@@ -129,43 +98,22 @@ table{
 }
 
 th,td{
-    padding:12px;
-    border-bottom:1px solid rgba(255,255,255,0.06);
+    padding:10px;
     font-size:13px;
+    border-bottom:1px solid rgba(255,255,255,0.05);
 }
 
-th{
-    text-align:left;
-    color:#9aa4b2;
-}
-
+th{opacity:.6;text-align:left}
 .center{text-align:center}
 
-/* badge */
 .badge{
     padding:4px 10px;
     border-radius:10px;
     background:rgba(255,255,255,0.06);
-    font-size:12px;
 }
 
-/* row animation */
 .row{
     animation:fade .3s ease;
-}
-
-@keyframes fade{
-    from{opacity:0; transform:translateY(10px);}
-    to{opacity:1; transform:translateY(0);}
-}
-
-/* header */
-h2{
-    font-weight:600;
-    letter-spacing:.5px;
-}
-small{
-    opacity:.6;
 }
 </style>
 </head>
@@ -176,113 +124,158 @@ small{
 
 <div class="wrap">
 
-    <div class="card">
-        <h2>DOIS PANEL</h2>
-        <small>Premium System UI • 2026</small>
+<div class="card">
+<h2>PANEL DOISXBILXZ</h2>
+<small>Dev : DoisXhosting</small>
 
-        <input id="email" placeholder="email@gmail.com">
-        <input id="limit" type="number" value="100">
+<input id="email" placeholder="email@gmail.com">
+<input id="limit" type="number" value="100">
+<input id="value" type="value" value="@DOISHOSTINGS">
 
-        <button onclick="addEmail()">+ Add Email</button>
-    </div>
+<button onclick="addEmail()">Add Email</button>
+</div>
 
-    <div class="card">
-        <h2>LIST EMAIL DOIS</h2>
+<div class="card">
+<h2>DOISXPANEL</h2>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Email</th>
-                    <th class="center">Limit</th>
-                    <th class="center">Action</th>
-                </tr>
-            </thead>
-            <tbody id="list"></tbody>
-        </table>
-    </div>
+<table>
+<thead>
+<tr>
+<th>Email</th>
+<th class="center">Limit</th>
+<th class="center">Action</th>
+</tr>
+</thead>
+<tbody id="list"></tbody>
+</table>
+
+</div>
 
 </div>
 
 <script>
 
 const BASE = "/api/proxy";
-let dataStore = [];
+let currentData = [];
 
-/* GET */
+/* GET DATA */
 async function getData(){
-  const res = await fetch(BASE+"?type=data&t="+Date.now());
-  const text = await res.text();
-
-  const match = text.match(/\[[\s\S]*\]/);
-  if(!match) return [];
-
-  return JSON.parse(match[0]);
+    const res = await fetch(BASE + "?type=data&t=" + Date.now());
+    const text = await res.text();
+    const match = text.match(/\[[\s\S]*\]/);
+    return match ? JSON.parse(match[0]) : [];
 }
 
 /* LOAD */
-async function load(){
-  dataStore = await getData();
-  render();
+async function loadAwal(){
+    currentData = await getData();
+    render();
 }
 
 /* RENDER */
 function render(){
-  const el = document.getElementById("list");
+    const list = document.getElementById("list");
 
-  if(dataStore.length === 0){
-    el.innerHTML = `<tr><td colspan="3" class="center">EMPTY</td></tr>`;
-    return;
-  }
+    if(currentData.length === 0){
+        list.innerHTML = `<tr><td colspan="3" class="center">No Data</td></tr>`;
+        return;
+    }
 
-  el.innerHTML = dataStore.map(v=>`
-    <tr>
-      <td>${v.email}</td>
-      <td class="center"><span class="badge">${v.jumlahResult}</span></td>
-      <td class="center">
-        <button class="danger" onclick="del('${encodeURIComponent(v.email)}')">Del</button>
-      </td>
-    </tr>
-  `).join("");
+    let html = "";
+
+    currentData.forEach(v=>{
+        html += `
+        <tr class="row">
+            <td>${v.email}</td>
+            <td class="center">
+                <span class="badge">${v.jumlahResult}</span>
+            </td>
+            <td class="center">
+                <button onclick="gantiNama('${encodeURIComponent(v.email)}')">Edit</button>
+                <button class="danger" onclick="del('${encodeURIComponent(v.email)}')">Del</button>
+            </td>
+        </tr>`;
+    });
+
+    list.innerHTML = html;
 }
 
 /* ADD */
 async function addEmail(){
+    const email = document.getElementById("email").value;
+    const limit = document.getElementById("limit").value;
 
-  const email = document.getElementById("email").value.trim();
-  const limit = document.getElementById("limit").value;
+    if(!email) return alert("Isi email");
 
-  if(!email) return alert("email kosong");
+    if(currentData.some(v => v.email === email)){
+        return alert("Email sudah ada");
+    }
 
-  const fd = new FormData();
-  fd.append("email", email);
-  fd.append("jumlahResult", limit);
+    currentData.unshift({ email, jumlahResult: limit });
+    render();
 
-  await fetch(BASE+"?type=add",{
-    method:"POST",
-    body:fd
-  });
+    let fd = new FormData();
+    fd.append("email", email);
+    fd.append("jumlahResult", limit);
 
-  load();
+    await fetch(BASE + "?type=add", {
+        method:"POST",
+        body:fd
+    });
+
+    document.getElementById("email").value = "";
 }
 
-/* DELETE */
-async function del(email){
+/* DELETE (hapus 1 aja) */
+function del(email){
+    email = decodeURIComponent(email);
 
-  email = decodeURIComponent(email);
+    let found = false;
+    currentData = currentData.filter(v=>{
+        if(!found && v.email === email){
+            found = true;
+            return false;
+        }
+        return true;
+    });
 
-  const fd = new FormData();
-  fd.append("email", email);
+    render();
 
-  await fetch(BASE+"?type=delete",{
-    method:"POST",
-    body:fd
-  });
+    let fd = new FormData();
+    fd.append("email", email);
 
-  load();
+    fetch(BASE + "?type=delete", {
+        method:"POST",
+        body:fd
+    });
+}
+
+/* EDIT (via proxy biar gak CORS) */
+async function gantiNama(email){
+    email = decodeURIComponent(email);
+    const nick = document.getElementById("nick").value;
+
+    if(!nick) return alert("Isi nama");
+
+    await fetch(`${BASE}?type=ganti&nick=${encodeURIComponent(nick)}&sender=${encodeURIComponent(email)}`);
+
+    alert("Berhasil diubah");
 }
 
 /* INIT */
-load();
+loadAwal();
+
+/* particles */
+particlesJS("particles-js",{
+    particles:{
+        number:{value:40},
+        color:{value:"#4f7cff"},
+        size:{value:2},
+        opacity:{value:0.3},
+        line_linked:{enable:true,distance:140,color:"#4f7cff"},
+        move:{speed:1}
+    }
+});
 
 </script>
 
