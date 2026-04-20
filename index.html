@@ -164,50 +164,48 @@ th{opacity:.6;text-align:left}
 
 <script>
 
-/* 🔥 PAKAI DOMAIN KAMU */
 const BASE = "https://kontolarpin.vercel.app/api/proxy";
 
-/* GET DATA */
+/* AMBIL DATA */
 async function getData(){
     try{
         const res = await fetch(BASE + "?type=data&t=" + Date.now());
-        const text = await res.text();
+        const data = await res.json();
 
-        const match = text.match(/\[[\s\S]*\]/);
-        if(!match) return [];
+        console.log("DATA:", data);
 
-        return JSON.parse(match[0]);
+        return Array.isArray(data) ? data : [];
 
     }catch(e){
-        console.log("GET ERROR:", e);
+        console.log("ERROR GET:", e);
         return [];
     }
 }
 
-/* RENDER FIX */
+/* RENDER FIX TOTAL */
 async function render(){
     const list = document.getElementById("list");
+
     const data = await getData();
 
     list.innerHTML = "";
 
-    if(!data || data.length === 0){
+    if(data.length === 0){
         list.innerHTML = `<tr><td colspan="3" class="center">No Data</td></tr>`;
         return;
     }
 
     data.forEach(v=>{
-        const tr = document.createElement("tr");
-
-        tr.innerHTML = `
+        list.innerHTML += `
+        <tr class="row">
             <td>${v.email}</td>
-            <td class="center">${v.jumlahResult}</td>
             <td class="center">
-                <button onclick="del('${v.email}')">Del</button>
+                <span class="badge">${v.jumlahResult}</span>
             </td>
-        `;
-
-        list.appendChild(tr);
+            <td class="center">
+                <button class="danger" onclick="del('${encodeURIComponent(v.email)}')">Del</button>
+            </td>
+        </tr>`;
     });
 }
 
@@ -216,28 +214,39 @@ async function addEmail(){
     const email = document.getElementById("email").value;
     const limit = document.getElementById("limit").value;
 
+    if(!email) return;
+
+    const fd = new FormData();
+    fd.append("email", email);
+    fd.append("jumlahResult", limit);
+
     await fetch(BASE + "?type=add", {
         method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ email, jumlahResult: limit })
+        body:fd
     });
+
+    document.getElementById("email").value = "";
 
     render();
 }
 
 /* DELETE */
 async function del(email){
+    const fd = new FormData();
+    fd.append("email", decodeURIComponent(email));
+
     await fetch(BASE + "?type=delete", {
         method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ email })
+        body:fd
     });
 
     render();
 }
 
-/* realtime */
-setInterval(render, 2500);
+/* REALTIME (LEBIH STABIL) */
+setInterval(render, 3000);
+
+/* INIT */
 render();
 
 </script>
