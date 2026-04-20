@@ -2,202 +2,242 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>DOISXPANEL</title>
+<title>Control Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-
 <style>
-/* 🔥 DESIGN LU GAK DIUBAH SAMA SEKALI */
-body{
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+*{
     margin:0;
+    padding:0;
+    box-sizing:border-box;
     font-family:Inter, sans-serif;
-    background:#070A12;
-    color:#fff;
 }
 
-#particles-js{
+body{
+    background:#0b0f14;
+    color:#eaeaea;
+    overflow-x:hidden;
+}
+
+/* soft animated background */
+body::before{
+    content:"";
     position:fixed;
-    inset:0;
+    width:200%;
+    height:200%;
+    background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.05), transparent 40%),
+                radial-gradient(circle at 80% 60%, rgba(255,255,255,0.04), transparent 45%);
+    animation:moveBg 12s ease-in-out infinite alternate;
     z-index:-1;
 }
 
-.wrap{
-    max-width:900px;
-    margin:auto;
-    padding:20px;
+@keyframes moveBg{
+    from{transform:translate(-10%, -10%)}
+    to{transform:translate(10%, 10%)}
 }
 
+.container{
+    max-width:900px;
+    margin:auto;
+    padding:30px 15px;
+}
+
+/* header */
+.header{
+    text-align:center;
+    margin-bottom:20px;
+    animation:fadeIn .6s ease;
+}
+
+.header h1{
+    font-weight:600;
+    font-size:22px;
+    letter-spacing:1px;
+}
+
+.header p{
+    font-size:12px;
+    opacity:.5;
+    margin-top:4px;
+}
+
+/* card */
 .card{
     background:rgba(255,255,255,0.04);
     border:1px solid rgba(255,255,255,0.08);
-    border-radius:18px;
+    border-radius:16px;
     padding:18px;
-    margin:14px 0;
-    animation:fade .4s ease;
-    transition:.25s;
+    margin-top:15px;
+    backdrop-filter:blur(10px);
+    animation:fadeUp .5s ease;
 }
 
-.card:hover{
-    transform:translateY(-2px);
-    border-color:#4f7cff;
-}
-
-@keyframes fade{
-    from{opacity:0;transform:translateY(10px)}
-    to{opacity:1;transform:translateY(0)}
-}
-
+/* inputs */
 input{
     width:100%;
-    box-sizing:border-box;
     padding:12px;
     margin-top:10px;
-    border-radius:12px;
-    border:1px solid rgba(255,255,255,0.08);
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.1);
     background:rgba(0,0,0,0.3);
     color:#fff;
     outline:none;
     transition:.25s;
 }
 
+/* smooth focus */
 input:focus{
-    border-color:#4f7cff;
-    background:rgba(0,0,0,0.45);
+    border-color:#ffffff55;
     transform:scale(1.02);
+    background:rgba(255,255,255,0.05);
 }
 
-input:active{
-    transform:scale(0.99);
-}
-
+/* button */
 button{
     width:100%;
     padding:12px;
+    margin-top:12px;
     border:none;
-    border-radius:12px;
-    margin-top:10px;
+    border-radius:10px;
     cursor:pointer;
+    background:#ffffff;
+    color:#111;
     font-weight:600;
-    background:linear-gradient(135deg,#4f7cff,#7aa8ff);
-    color:#fff;
     transition:.2s;
 }
 
-button:hover{transform:scale(1.02)}
-button:active{transform:scale(.96)}
-
-.danger{
-    background:linear-gradient(135deg,#ff3b5c,#ff6a6a);
+button:hover{
+    transform:scale(1.02);
+    opacity:.9;
 }
 
+button:active{
+    transform:scale(.97);
+}
+
+/* table */
 table{
     width:100%;
-    border-collapse:collapse;
     margin-top:10px;
+    border-collapse:collapse;
 }
 
 th,td{
     padding:10px;
     font-size:13px;
-    border-bottom:1px solid rgba(255,255,255,0.05);
+    border-bottom:1px solid rgba(255,255,255,0.06);
 }
 
-th{opacity:.6;text-align:left}
-.center{text-align:center}
+th{
+    text-align:left;
+    opacity:.5;
+}
+
+td{
+    opacity:.9;
+}
 
 .badge{
     padding:4px 10px;
-    border-radius:10px;
-    background:rgba(255,255,255,0.06);
+    background:rgba(255,255,255,0.08);
+    border-radius:8px;
 }
 
-.row{
-    animation:fade .3s ease;
+/* delete button */
+.del{
+    background:#ff4d4d;
+    color:#fff;
+    border:none;
+    padding:6px 10px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+/* animations */
+@keyframes fadeUp{
+    from{opacity:0;transform:translateY(15px)}
+    to{opacity:1;transform:translateY(0)}
+}
+
+@keyframes fadeIn{
+    from{opacity:0}
+    to{opacity:1}
+}
+
+/* mobile */
+@media(max-width:600px){
+    .header h1{font-size:18px}
 }
 </style>
 </head>
 
 <body>
 
-<div id="particles-js"></div>
+<div class="container">
 
-<div class="wrap">
+    <div class="header">
+        <h1>CONTROL PANEL</h1>
+        <p>panel tergacor 2k26 by dois</p>
+    </div>
 
-<div class="card">
-<h2>PANEL DOISXBILXZ</h2>
-<small>Dev : DoisXhosting</small>
+    <!-- ADD -->
+    <div class="card">
+        <h3>Add Email</h3>
+        <input id="email" placeholder="email@example.com">
+        <input id="limit" type="number" value="100">
+        <button onclick="addEmail()">Add Data</button>
+    </div>
 
-<input id="email" placeholder="email@gmail.com">
-<input id="limit" type="number" value="100">
-<input id="value" type="value" value="@DOISHOSTINGS">
-
-<button onclick="addEmail()">Add Email</button>
-</div>
-
-<div class="card">
-<h2>DOISXPANEL</h2>
-
-<table>
-<thead>
-<tr>
-<th>Email</th>
-<th class="center">Limit</th>
-<th class="center">Action</th>
-</tr>
-</thead>
-<tbody id="list"></tbody>
-</table>
-
-</div>
+    <!-- TABLE -->
+    <div class="card">
+        <h3>Database</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Limit</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="list"></tbody>
+        </table>
+    </div>
 
 </div>
 
 <script>
 
 const BASE = "/api/proxy";
-let currentData = [];
-
-/* GET DATA */
-async function getData(){
-    const res = await fetch(BASE + "?type=data&t=" + Date.now());
-    const text = await res.text();
-    const match = text.match(/\[[\s\S]*\]/);
-    return match ? JSON.parse(match[0]) : [];
-}
+let data = [];
 
 /* LOAD */
-async function loadAwal(){
-    currentData = await getData();
+async function load(){
+    const res = await fetch(BASE+"?type=data");
+    const json = await res.json();
+    data = json || [];
     render();
 }
 
 /* RENDER */
 function render(){
-    const list = document.getElementById("list");
+    const el = document.getElementById("list");
+    el.innerHTML = "";
 
-    if(currentData.length === 0){
-        list.innerHTML = `<tr><td colspan="3" class="center">No Data</td></tr>`;
+    if(data.length === 0){
+        el.innerHTML = `<tr><td colspan="3" style="opacity:.4">Empty</td></tr>`;
         return;
     }
 
-    let html = "";
-
-    currentData.forEach(v=>{
-        html += `
-        <tr class="row">
+    data.forEach(v=>{
+        el.innerHTML += `
+        <tr>
             <td>${v.email}</td>
-            <td class="center">
-                <span class="badge">${v.jumlahResult}</span>
-            </td>
-            <td class="center">
-                <button onclick="gantiNama('${encodeURIComponent(v.email)}')">Edit</button>
-                <button class="danger" onclick="del('${encodeURIComponent(v.email)}')">Del</button>
-            </td>
+            <td><span class="badge">${v.jumlahResult}</span></td>
+            <td><button class="del" onclick="del('${v.email}')">Delete</button></td>
         </tr>`;
     });
-
-    list.innerHTML = html;
 }
 
 /* ADD */
@@ -205,77 +245,36 @@ async function addEmail(){
     const email = document.getElementById("email").value;
     const limit = document.getElementById("limit").value;
 
-    if(!email) return alert("Isi email");
-
-    if(currentData.some(v => v.email === email)){
-        return alert("Email sudah ada");
-    }
-
-    currentData.unshift({ email, jumlahResult: limit });
-    render();
+    if(!email) return alert("isi email");
 
     let fd = new FormData();
     fd.append("email", email);
     fd.append("jumlahResult", limit);
 
-    await fetch(BASE + "?type=add", {
+    await fetch(BASE+"?type=add",{
         method:"POST",
         body:fd
     });
 
-    document.getElementById("email").value = "";
+    load();
 }
 
-/* DELETE (hapus 1 aja) */
-function del(email){
-    email = decodeURIComponent(email);
-
-    let found = false;
-    currentData = currentData.filter(v=>{
-        if(!found && v.email === email){
-            found = true;
-            return false;
-        }
-        return true;
-    });
-
-    render();
+/* DELETE */
+async function del(email){
 
     let fd = new FormData();
     fd.append("email", email);
 
-    fetch(BASE + "?type=delete", {
+    await fetch(BASE+"?type=delete",{
         method:"POST",
         body:fd
     });
-}
 
-/* EDIT (via proxy biar gak CORS) */
-async function gantiNama(email){
-    email = decodeURIComponent(email);
-    const nick = document.getElementById("nick").value;
-
-    if(!nick) return alert("Isi nama");
-
-    await fetch(`${BASE}?type=ganti&nick=${encodeURIComponent(nick)}&sender=${encodeURIComponent(email)}`);
-
-    alert("Berhasil diubah");
+    load();
 }
 
 /* INIT */
-loadAwal();
-
-/* particles */
-particlesJS("particles-js",{
-    particles:{
-        number:{value:40},
-        color:{value:"#4f7cff"},
-        size:{value:2},
-        opacity:{value:0.3},
-        line_linked:{enable:true,distance:140,color:"#4f7cff"},
-        move:{speed:1}
-    }
-});
+load();
 
 </script>
 
