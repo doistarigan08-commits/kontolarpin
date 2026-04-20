@@ -1,56 +1,90 @@
 export default async function handler(req, res) {
 
-  const { type, nick, sender } = req.query;
-  let url = "";
+  const BASE = "https://dois.sahur.biz.id/doisxbilxz/ultimate";
 
-  if (type === "data") {
-    url = "https://dois.sahur.biz.id/doisxbilxz/ultimate/data.php";
+  const map = {
+    data: "/data.php",
+    add: "/add.php",
+    delete: "/delete.php",
+    ganti: "/ganti.php"
+  };
+
+  const type = req.query.type;
+  const path = map[type];
+
+  if (!path) {
+    return res.status(400).json({ success: false, message: "Invalid type" });
   }
 
-  if (type === "add") {
-    url = "https://dois.sahur.biz.id/doisxbilxz/ultimate/add.php";
-  }
-
-  if (type === "delete") {
-    url = "https://dois.sahur.biz.id/doisxbilxz/ultimate/delete.php";
-  }
-
-  if (type === "ganti") {
-    url = `https://dois.sahur.biz.id/doisxbilxz/ultimate/ganti.php?nick=${encodeURIComponent(nick)}&sender=${encodeURIComponent(sender)}`;
-  }
-
-  if (!url) {
-    return res.status(400).json({ error: "invalid type" });
-  }
+  const url = BASE + path;
 
   try {
-    const options = {
-      method: req.method,
-      headers: {}
-    };
 
-    if (req.method !== "GET") {
-      options.headers["Content-Type"] = "application/x-www-form-urlencoded";
-      options.body = new URLSearchParams(req.body).toString();
+    // =========================
+    // READ BODY (SAFE VERCEL STREAM)
+    // =========================
+    let body = "";
+
+    if (req.method === "POST") {
+      const chunks = [];
+      for await (const chunk of req) chunks.push(chunk);
+      body = Buffer.concat(chunks).toString("utf8");
     }
 
-    const r = await fetch(url, options);
-    const text = await r.text();
+    // =========================
+    // FETCH (FORWARD TO PHP)
+    // =========================
+    const response = await fetch(url, {
+      method: req.method,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept-Encoding": "identity" // 🔥 penting: matiin compression problem
+      },
+      body: req.method === "POST" ? body : undefined
+    });
 
-    let clean = text;
+    // =========================
+    // GET RAW TEXT
+    // =========================
+    let text = await response.text();
 
-    const arr = text.match(/\[[\s\S]*\]/);
-    const obj = text.match(/\{[\s\S]*\}/);
+    console.log("RAW:", text);
 
-    if (arr) clean = arr[0];
-    else if (obj) clean = obj[0];
+    // =========================
+    // CLEAN RESPONSE (ANTI HTML / GARBAGE)
+    // =========================
+    text = text.replace(/<[^>]*>/g, "").trim();
 
+    // =========================
+    // PARSE SAFE JSON
+    // =========================
+    let result;
+
+    try {
+      result = JSON.parse(text);
+    } catch (e) {
+
+      const arr = text.match(/\[[\s\S]*\]/);
+      const obj = text.match(/\{[\s\S]*\}/);
+
+      if (arr) result = JSON.parse(arr[0]);
+      else if (obj) result = JSON.parse(obj[0]);
+      else result = [];
+    }
+
+    // =========================
+    // RESPONSE
+    // =========================
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Content-Type", "application/json");
 
-    res.status(200).send(clean);
+    return res.status(200).json(result);
 
-  } catch (e) {
-    res.status(500).json({ error: "proxy error" });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Proxy Error",
+      error: err.message
+    });
   }
 }
