@@ -21,7 +21,7 @@ body{
   overflow-x:hidden;
 }
 
-/* ================= AURORA ================= */
+/* ================= BACKGROUND ================= */
 .bg{
   position:fixed;
   inset:0;
@@ -39,12 +39,12 @@ body{
   100%{transform:translateY(-25px) scale(1.1);}
 }
 
-/* ================= BLUR OVERLAY (TOAST ACTIVE) ================= */
+/* ================= BLUR OVERLAY ================= */
 .blur{
   position:fixed;
   inset:0;
   background:rgba(0,0,0,0.35);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
   opacity:0;
   pointer-events:none;
   transition:.25s;
@@ -70,13 +70,6 @@ body{
   padding:18px;
   margin-bottom:15px;
   backdrop-filter: blur(14px);
-  animation:fadeIn .5s ease forwards;
-  opacity:0;
-  transform:translateY(15px);
-}
-
-@keyframes fadeIn{
-  to{opacity:1;transform:translateY(0);}
 }
 
 /* ================= INPUT ================= */
@@ -89,13 +82,6 @@ input{
   background:rgba(255,255,255,0.03);
   color:#fff;
   outline:none;
-  transition:.2s;
-}
-
-input:focus{
-  border-color:#8ab4ff;
-  background:rgba(255,255,255,0.06);
-  transform:scale(1.01);
 }
 
 /* ================= BUTTON ================= */
@@ -108,19 +94,14 @@ button{
   background:linear-gradient(135deg,#6aa6ff,#8ab4ff);
   color:#000;
   font-weight:600;
-  cursor:pointer;
-  transition:.2s;
 }
-
-button:hover{transform:translateY(-2px);}
-button:active{transform:scale(0.98);}
 
 /* ================= TABLE ================= */
 table{
   width:100%;
   border-collapse:collapse;
-  table-layout:fixed;
   margin-top:10px;
+  table-layout:fixed;
 }
 
 th,td{
@@ -131,81 +112,86 @@ th,td{
 
 th{
   color:#9fb4ff;
-  font-weight:500;
 }
 
+/* FIX ALIGN GRID */
 tr{
-  animation:rowIn .3s ease forwards;
-  opacity:0;
-  transform:translateY(10px);
+  display:grid;
+  grid-template-columns: 1fr 120px 80px;
+  align-items:center;
 }
 
-@keyframes rowIn{
-  to{opacity:1;transform:translateY(0);}
+td{
+  overflow:hidden;
 }
 
+/* EMAIL */
 .email{
-  display:block;
-  max-width:260px;
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
 }
 
+/* badge */
 .badge{
   padding:5px 10px;
   border-radius:999px;
   background:rgba(255,255,255,0.06);
 }
 
-/* ================= DELETE ================= */
+/* DELETE */
 .del{
   background:transparent;
   color:#ff6b86;
   border:1px solid rgba(255,92,122,0.4);
   padding:6px 10px;
   border-radius:10px;
-  font-size:12px;
 }
 
-/* ================= TOAST ================= */
+/* ================= CENTER TOAST ================= */
 .toast{
   position:fixed;
-  top:20px;
+  top:50%;
   left:50%;
-  transform:translateX(-50%) translateY(-20px);
-  background:rgba(20,20,25,0.85);
+  transform:translate(-50%,-50%) scale(0.9);
+  background:rgba(20,20,25,0.9);
   border:1px solid rgba(255,255,255,0.08);
-  backdrop-filter: blur(12px);
-  padding:12px 16px;
-  border-radius:14px;
+  backdrop-filter: blur(14px);
+  padding:18px 22px;
+  border-radius:16px;
   display:flex;
-  gap:8px;
+  flex-direction:column;
   align-items:center;
-  font-size:13px;
+  gap:8px;
   opacity:0;
   pointer-events:none;
   transition:.25s;
   z-index:9999;
+  min-width:200px;
+  text-align:center;
 }
 
 .toast.show{
   opacity:1;
-  transform:translateX(-50%) translateY(0);
+  transform:translate(-50%,-50%) scale(1);
 }
 
-.toast #icon{
-  width:18px;
-  height:18px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+.icon{
+  width:26px;
+  height:26px;
 }
 
-.toast svg{
-  width:18px;
-  height:18px;
+/* svg */
+svg{
+  width:26px;
+  height:26px;
   stroke:#fff;
+}
+
+/* text */
+.toast span{
+  font-size:13px;
+  opacity:0.9;
 }
 </style>
 </head>
@@ -218,7 +204,7 @@ tr{
 <!-- TOAST -->
 <div id="toast" class="toast">
   <div id="icon"></div>
-  <span id="msg">Success</span>
+  <span id="msg"></span>
 </div>
 
 <div class="container">
@@ -251,30 +237,30 @@ tr{
 const API = "/api/proxy?type=";
 let data = [];
 
-/* ================= TOAST + BLUR ================= */
-function toast(type, message){
+/* TOAST */
+function toast(type,msg){
 
   const t = document.getElementById("toast");
   const blur = document.getElementById("blur");
   const icon = document.getElementById("icon");
-  const msg = document.getElementById("msg");
+  const text = document.getElementById("msg");
 
   let svg = "";
 
-  if(type === "add"){
-    svg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  if(type==="add"){
+    svg = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2">
       <path d="M20 6L9 17l-5-5"/>
     </svg>`;
   }
 
-  if(type === "del"){
-    svg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  if(type==="del"){
+    svg = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2">
       <path d="M18 6L6 18M6 6l12 12"/>
     </svg>`;
   }
 
   icon.innerHTML = svg;
-  msg.innerText = message;
+  text.innerText = msg;
 
   t.classList.add("show");
   blur.classList.add("show");
@@ -282,17 +268,17 @@ function toast(type, message){
   setTimeout(()=>{
     t.classList.remove("show");
     blur.classList.remove("show");
-  },2000);
+  },1800);
 }
 
-/* ================= LOAD ================= */
+/* LOAD */
 async function load(){
-  const res = await fetch(API + "data");
+  const res = await fetch(API+"data");
   data = await res.json();
   render();
 }
 
-/* ================= RENDER ================= */
+/* RENDER */
 function render(){
   const el = document.getElementById("list");
 
@@ -303,45 +289,45 @@ function render(){
 
   el.innerHTML = data.map(v=>`
     <tr>
-      <td><span class="email">${v.email}</span></td>
+      <td class="email">${v.email}</td>
       <td><span class="badge">${v.jumlahResult}</span></td>
       <td><button class="del" onclick="del('${v.email}')">Del</button></td>
     </tr>
   `).join("");
 }
 
-/* ================= ADD ================= */
+/* ADD */
 async function addEmail(){
   const email = document.getElementById("email").value;
   const limit = document.getElementById("limit").value;
 
-  await fetch(API + "add", {
+  await fetch(API+"add",{
     method:"POST",
     headers:{"Content-Type":"application/x-www-form-urlencoded"},
     body:`email=${email}&jumlahResult=${limit}`
   });
 
-  document.getElementById("email").value = "";
-  load();
+  document.getElementById("email").value="";
 
+  load();
   toast("add","Success di tambahkan");
 }
 
-/* ================= DELETE ================= */
+/* DELETE */
 async function del(email){
-  await fetch(API + "delete", {
+
+  await fetch(API+"delete",{
     method:"POST",
     headers:{"Content-Type":"application/x-www-form-urlencoded"},
     body:`email=${email}`
   });
 
   load();
-
   toast("del","Success di hapus email");
 }
 
 load();
-setInterval(load, 4000);
+setInterval(load,4000);
 
 </script>
 
