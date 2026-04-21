@@ -21,24 +21,41 @@ body{
   overflow-x:hidden;
 }
 
-/* ================= AURORA BACKGROUND ================= */
+/* ================= AURORA ================= */
 .bg{
   position:fixed;
   inset:0;
-  z-index:-2;
-  background: radial-gradient(circle at 20% 20%, #ffffff10, transparent 40%),
-              radial-gradient(circle at 80% 30%, #6aa6ff25, transparent 45%),
-              radial-gradient(circle at 40% 80%, #ffffff08, transparent 50%);
-  filter: blur(20px);
+  z-index:-3;
+  background:
+    radial-gradient(circle at 20% 20%, #ffffff10, transparent 40%),
+    radial-gradient(circle at 80% 30%, #6aa6ff25, transparent 45%),
+    radial-gradient(circle at 40% 80%, #ffffff08, transparent 50%);
+  filter: blur(25px);
   animation: move 12s infinite alternate ease-in-out;
 }
 
 @keyframes move{
   0%{transform:translateY(0px) scale(1);}
-  100%{transform:translateY(-20px) scale(1.1);}
+  100%{transform:translateY(-25px) scale(1.1);}
 }
 
-/* ================= LAYOUT ================= */
+/* ================= BLUR OVERLAY (TOAST ACTIVE) ================= */
+.blur{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.35);
+  backdrop-filter: blur(8px);
+  opacity:0;
+  pointer-events:none;
+  transition:.25s;
+  z-index:10;
+}
+
+.blur.show{
+  opacity:1;
+}
+
+/* ================= CONTAINER ================= */
 .container{
   max-width:900px;
   margin:auto;
@@ -53,16 +70,13 @@ body{
   padding:18px;
   margin-bottom:15px;
   backdrop-filter: blur(14px);
+  animation:fadeIn .5s ease forwards;
   opacity:0;
-  transform:translateY(20px);
-  animation:fadeIn .6s forwards;
+  transform:translateY(15px);
 }
 
 @keyframes fadeIn{
-  to{
-    opacity:1;
-    transform:translateY(0);
-  }
+  to{opacity:1;transform:translateY(0);}
 }
 
 /* ================= INPUT ================= */
@@ -75,7 +89,7 @@ input{
   background:rgba(255,255,255,0.03);
   color:#fff;
   outline:none;
-  transition:.25s;
+  transition:.2s;
 }
 
 input:focus{
@@ -96,41 +110,16 @@ button{
   font-weight:600;
   cursor:pointer;
   transition:.2s;
-  position:relative;
-  overflow:hidden;
 }
 
-button:hover{
-  transform:translateY(-2px);
-}
-
-button:active{
-  transform:scale(0.98);
-}
-
-/* ripple effect */
-button::after{
-  content:"";
-  position:absolute;
-  width:20px;
-  height:20px;
-  background:rgba(255,255,255,0.6);
-  border-radius:50%;
-  transform:scale(0);
-  opacity:0;
-  transition:0.4s;
-}
-
-button:active::after{
-  transform:scale(10);
-  opacity:0;
-  transition:0s;
-}
+button:hover{transform:translateY(-2px);}
+button:active{transform:scale(0.98);}
 
 /* ================= TABLE ================= */
 table{
   width:100%;
   border-collapse:collapse;
+  table-layout:fixed;
   margin-top:10px;
 }
 
@@ -146,38 +135,77 @@ th{
 }
 
 tr{
-  transition:.2s;
+  animation:rowIn .3s ease forwards;
+  opacity:0;
+  transform:translateY(10px);
 }
 
-tr:hover{
-  background:rgba(255,255,255,0.03);
+@keyframes rowIn{
+  to{opacity:1;transform:translateY(0);}
 }
 
-/* ================= BADGE ================= */
+.email{
+  display:block;
+  max-width:260px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
 .badge{
   padding:5px 10px;
   border-radius:999px;
   background:rgba(255,255,255,0.06);
 }
 
-/* ================= DELETE BUTTON ================= */
+/* ================= DELETE ================= */
 .del{
   background:transparent;
-  color:#ff5c7a;
-  border:1px solid rgba(255,92,122,0.3);
-  width:auto;
+  color:#ff6b86;
+  border:1px solid rgba(255,92,122,0.4);
   padding:6px 10px;
   border-radius:10px;
+  font-size:12px;
 }
 
-.del:hover{
-  background:#ff5c7a;
-  color:#000;
+/* ================= TOAST ================= */
+.toast{
+  position:fixed;
+  top:20px;
+  left:50%;
+  transform:translateX(-50%) translateY(-20px);
+  background:rgba(20,20,25,0.85);
+  border:1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(12px);
+  padding:12px 16px;
+  border-radius:14px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+  font-size:13px;
+  opacity:0;
+  pointer-events:none;
+  transition:.25s;
+  z-index:9999;
 }
 
-h2{
-  font-weight:500;
-  letter-spacing:0.3px;
+.toast.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+
+.toast #icon{
+  width:18px;
+  height:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.toast svg{
+  width:18px;
+  height:18px;
+  stroke:#fff;
 }
 </style>
 </head>
@@ -185,6 +213,13 @@ h2{
 <body>
 
 <div class="bg"></div>
+<div id="blur" class="blur"></div>
+
+<!-- TOAST -->
+<div id="toast" class="toast">
+  <div id="icon"></div>
+  <span id="msg">Success</span>
+</div>
 
 <div class="container">
 
@@ -212,15 +247,52 @@ h2{
 </div>
 
 <script>
+
 const API = "/api/proxy?type=";
 let data = [];
 
+/* ================= TOAST + BLUR ================= */
+function toast(type, message){
+
+  const t = document.getElementById("toast");
+  const blur = document.getElementById("blur");
+  const icon = document.getElementById("icon");
+  const msg = document.getElementById("msg");
+
+  let svg = "";
+
+  if(type === "add"){
+    svg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M20 6L9 17l-5-5"/>
+    </svg>`;
+  }
+
+  if(type === "del"){
+    svg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M18 6L6 18M6 6l12 12"/>
+    </svg>`;
+  }
+
+  icon.innerHTML = svg;
+  msg.innerText = message;
+
+  t.classList.add("show");
+  blur.classList.add("show");
+
+  setTimeout(()=>{
+    t.classList.remove("show");
+    blur.classList.remove("show");
+  },2000);
+}
+
+/* ================= LOAD ================= */
 async function load(){
   const res = await fetch(API + "data");
   data = await res.json();
   render();
 }
 
+/* ================= RENDER ================= */
 function render(){
   const el = document.getElementById("list");
 
@@ -231,13 +303,14 @@ function render(){
 
   el.innerHTML = data.map(v=>`
     <tr>
-      <td>${v.email}</td>
+      <td><span class="email">${v.email}</span></td>
       <td><span class="badge">${v.jumlahResult}</span></td>
-      <td><button class="del" onclick="del('${v.email}')">Delete</button></td>
+      <td><button class="del" onclick="del('${v.email}')">Del</button></td>
     </tr>
   `).join("");
 }
 
+/* ================= ADD ================= */
 async function addEmail(){
   const email = document.getElementById("email").value;
   const limit = document.getElementById("limit").value;
@@ -248,9 +321,13 @@ async function addEmail(){
     body:`email=${email}&jumlahResult=${limit}`
   });
 
-  await load();
+  document.getElementById("email").value = "";
+  load();
+
+  toast("add","Success di tambahkan");
 }
 
+/* ================= DELETE ================= */
 async function del(email){
   await fetch(API + "delete", {
     method:"POST",
@@ -258,11 +335,14 @@ async function del(email){
     body:`email=${email}`
   });
 
-  await load();
+  load();
+
+  toast("del","Success di hapus email");
 }
 
 load();
-setInterval(load, 5000);
+setInterval(load, 4000);
+
 </script>
 
 </body>
