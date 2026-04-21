@@ -2,78 +2,132 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>DOIS PANEL</title>
+<title>Kontrol Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+*{
   margin:0;
-  font-family:system-ui, sans-serif;
-  background:#f5f6f8;
-  color:#111;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Inter, sans-serif;
 }
 
-/* container */
-.wrap{
+body{
+  background:#0b0f17;
+  color:#e9eef7;
+  overflow-x:hidden;
+}
+
+/* ================= AURORA BACKGROUND ================= */
+.bg{
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  background: radial-gradient(circle at 20% 20%, #ffffff10, transparent 40%),
+              radial-gradient(circle at 80% 30%, #6aa6ff25, transparent 45%),
+              radial-gradient(circle at 40% 80%, #ffffff08, transparent 50%);
+  filter: blur(20px);
+  animation: move 12s infinite alternate ease-in-out;
+}
+
+@keyframes move{
+  0%{transform:translateY(0px) scale(1);}
+  100%{transform:translateY(-20px) scale(1.1);}
+}
+
+/* ================= LAYOUT ================= */
+.container{
   max-width:900px;
   margin:auto;
-  padding:20px;
+  padding:25px;
 }
 
-/* card */
+/* ================= CARD ================= */
 .card{
-  background:#fff;
-  border-radius:16px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:18px;
   padding:18px;
-  margin-bottom:16px;
-  box-shadow:0 10px 25px rgba(0,0,0,0.05);
-  animation:fade .3s ease;
+  margin-bottom:15px;
+  backdrop-filter: blur(14px);
+  opacity:0;
+  transform:translateY(20px);
+  animation:fadeIn .6s forwards;
 }
 
-@keyframes fade{
-  from{opacity:0;transform:translateY(10px)}
-  to{opacity:1;transform:translateY(0)}
+@keyframes fadeIn{
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
 }
 
-/* input */
+/* ================= INPUT ================= */
 input{
   width:100%;
   padding:12px;
   margin-top:10px;
-  border-radius:10px;
-  border:1px solid #ddd;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.08);
+  background:rgba(255,255,255,0.03);
+  color:#fff;
   outline:none;
-  transition:.2s;
+  transition:.25s;
 }
 
 input:focus{
-  border-color:#111;
+  border-color:#8ab4ff;
+  background:rgba(255,255,255,0.06);
   transform:scale(1.01);
 }
 
-/* button */
+/* ================= BUTTON ================= */
 button{
   width:100%;
-  padding:12px;
   margin-top:10px;
+  padding:12px;
   border:none;
-  border-radius:10px;
-  background:#111;
-  color:#fff;
+  border-radius:12px;
+  background:linear-gradient(135deg,#6aa6ff,#8ab4ff);
+  color:#000;
+  font-weight:600;
   cursor:pointer;
   transition:.2s;
+  position:relative;
+  overflow:hidden;
 }
 
 button:hover{
-  transform:scale(1.02);
-  opacity:0.9;
+  transform:translateY(-2px);
 }
 
 button:active{
   transform:scale(0.98);
 }
 
-/* table */
+/* ripple effect */
+button::after{
+  content:"";
+  position:absolute;
+  width:20px;
+  height:20px;
+  background:rgba(255,255,255,0.6);
+  border-radius:50%;
+  transform:scale(0);
+  opacity:0;
+  transition:0.4s;
+}
+
+button:active::after{
+  transform:scale(10);
+  opacity:0;
+  transition:0s;
+}
+
+/* ================= TABLE ================= */
 table{
   width:100%;
   border-collapse:collapse;
@@ -81,148 +135,134 @@ table{
 }
 
 th,td{
-  padding:10px;
-  border-bottom:1px solid #eee;
-  font-size:14px;
+  padding:12px;
+  font-size:13px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
 }
 
 th{
-  text-align:left;
-  color:#888;
+  color:#9fb4ff;
+  font-weight:500;
 }
 
-.center{
-  text-align:center;
+tr{
+  transition:.2s;
 }
 
-/* delete button */
+tr:hover{
+  background:rgba(255,255,255,0.03);
+}
+
+/* ================= BADGE ================= */
+.badge{
+  padding:5px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,0.06);
+}
+
+/* ================= DELETE BUTTON ================= */
 .del{
-  background:#ff3b3b;
+  background:transparent;
+  color:#ff5c7a;
+  border:1px solid rgba(255,92,122,0.3);
+  width:auto;
+  padding:6px 10px;
+  border-radius:10px;
+}
+
+.del:hover{
+  background:#ff5c7a;
+  color:#000;
+}
+
+h2{
+  font-weight:500;
+  letter-spacing:0.3px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="wrap">
+<div class="bg"></div>
+
+<div class="container">
 
 <div class="card">
-<h3>Add Email</h3>
-<input id="email" placeholder="email@gmail.com">
-<input id="limit" type="number" value="100">
-<button onclick="addEmail()">Add</button>
+  <h2>Panel Control</h2>
+  <input id="email" placeholder="email@gmail.com">
+  <input id="limit" type="number" value="100">
+  <button onclick="addEmail()">Add Email</button>
 </div>
 
 <div class="card">
-<h3>Database</h3>
-
-<table>
-<thead>
-<tr>
-<th>Email</th>
-<th class="center">Limit</th>
-<th class="center">Action</th>
-</tr>
-</thead>
-
-<tbody id="list"></tbody>
-</table>
+  <h2>Database</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Limit</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="list"></tbody>
+  </table>
 </div>
 
 </div>
 
 <script>
+const API = "/api/proxy?type=";
+let data = [];
 
-const BASE = "/api/proxy";
-
-let currentData = [];
-
-/* =========================
-   REALTIME LOOP
-========================= */
-async function fetchData(){
-  try{
-    const res = await fetch(BASE+"?type=data&t="+Date.now());
-    const data = await res.json();
-
-    currentData = Array.isArray(data) ? data : [];
-    render();
-
-  }catch(e){
-    console.log(e);
-  }
+async function load(){
+  const res = await fetch(API + "data");
+  data = await res.json();
+  render();
 }
 
-setInterval(fetchData, 2500);
-
-/* =========================
-   ADD
-========================= */
-async function addEmail(){
-
-  const email = document.getElementById("email").value.trim();
-  const limit = document.getElementById("limit").value;
-
-  if(!email) return alert("isi email");
-
-  const body = `email=${encodeURIComponent(email)}&jumlahResult=${limit}`;
-
-  await fetch(BASE+"?type=add",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/x-www-form-urlencoded"
-    },
-    body
-  });
-
-  document.getElementById("email").value = "";
-  fetchData();
-}
-
-/* =========================
-   DELETE
-========================= */
-async function del(email){
-
-  const body = `email=${encodeURIComponent(email)}`;
-
-  await fetch(BASE+"?type=delete",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/x-www-form-urlencoded"
-    },
-    body
-  });
-
-  fetchData();
-}
-
-/* =========================
-   RENDER
-========================= */
 function render(){
-
   const el = document.getElementById("list");
 
-  if(!currentData.length){
-    el.innerHTML = `<tr><td colspan="3" class="center">Empty</td></tr>`;
+  if(!data.length){
+    el.innerHTML = `<tr><td colspan="3">Empty</td></tr>`;
     return;
   }
 
-  el.innerHTML = currentData.map(v=>`
+  el.innerHTML = data.map(v=>`
     <tr>
       <td>${v.email}</td>
-      <td class="center">${v.jumlahResult}</td>
-      <td class="center">
-        <button class="del" onclick="del('${v.email}')">Delete</button>
-      </td>
+      <td><span class="badge">${v.jumlahResult}</span></td>
+      <td><button class="del" onclick="del('${v.email}')">Delete</button></td>
     </tr>
   `).join("");
 }
 
-/* init */
-fetchData();
+async function addEmail(){
+  const email = document.getElementById("email").value;
+  const limit = document.getElementById("limit").value;
 
+  await fetch(API + "add", {
+    method:"POST",
+    headers:{"Content-Type":"application/x-www-form-urlencoded"},
+    body:`email=${email}&jumlahResult=${limit}`
+  });
+
+  await load();
+}
+
+async function del(email){
+  await fetch(API + "delete", {
+    method:"POST",
+    headers:{"Content-Type":"application/x-www-form-urlencoded"},
+    body:`email=${email}`
+  });
+
+  await load();
+}
+
+load();
+setInterval(load, 5000);
 </script>
 
 </body>
