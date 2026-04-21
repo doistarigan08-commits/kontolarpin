@@ -2,279 +2,226 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Control Panel</title>
+<title>DOIS PANEL</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Inter, sans-serif;
-}
-
 body{
-    background:#0b0f14;
-    color:#eaeaea;
-    overflow-x:hidden;
+  margin:0;
+  font-family:system-ui, sans-serif;
+  background:#f5f6f8;
+  color:#111;
 }
 
-/* soft animated background */
-body::before{
-    content:"";
-    position:fixed;
-    width:200%;
-    height:200%;
-    background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.05), transparent 40%),
-                radial-gradient(circle at 80% 60%, rgba(255,255,255,0.04), transparent 45%);
-    animation:moveBg 12s ease-in-out infinite alternate;
-    z-index:-1;
-}
-
-@keyframes moveBg{
-    from{transform:translate(-10%, -10%)}
-    to{transform:translate(10%, 10%)}
-}
-
-.container{
-    max-width:900px;
-    margin:auto;
-    padding:30px 15px;
-}
-
-/* header */
-.header{
-    text-align:center;
-    margin-bottom:20px;
-    animation:fadeIn .6s ease;
-}
-
-.header h1{
-    font-weight:600;
-    font-size:22px;
-    letter-spacing:1px;
-}
-
-.header p{
-    font-size:12px;
-    opacity:.5;
-    margin-top:4px;
+/* container */
+.wrap{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
 }
 
 /* card */
 .card{
-    background:rgba(255,255,255,0.04);
-    border:1px solid rgba(255,255,255,0.08);
-    border-radius:16px;
-    padding:18px;
-    margin-top:15px;
-    backdrop-filter:blur(10px);
-    animation:fadeUp .5s ease;
+  background:#fff;
+  border-radius:16px;
+  padding:18px;
+  margin-bottom:16px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.05);
+  animation:fade .3s ease;
 }
 
-/* inputs */
+@keyframes fade{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* input */
 input{
-    width:100%;
-    padding:12px;
-    margin-top:10px;
-    border-radius:10px;
-    border:1px solid rgba(255,255,255,0.1);
-    background:rgba(0,0,0,0.3);
-    color:#fff;
-    outline:none;
-    transition:.25s;
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  outline:none;
+  transition:.2s;
 }
 
-/* smooth focus */
 input:focus{
-    border-color:#ffffff55;
-    transform:scale(1.02);
-    background:rgba(255,255,255,0.05);
+  border-color:#111;
+  transform:scale(1.01);
 }
 
 /* button */
 button{
-    width:100%;
-    padding:12px;
-    margin-top:12px;
-    border:none;
-    border-radius:10px;
-    cursor:pointer;
-    background:#ffffff;
-    color:#111;
-    font-weight:600;
-    transition:.2s;
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:10px;
+  background:#111;
+  color:#fff;
+  cursor:pointer;
+  transition:.2s;
 }
 
 button:hover{
-    transform:scale(1.02);
-    opacity:.9;
+  transform:scale(1.02);
+  opacity:0.9;
 }
 
 button:active{
-    transform:scale(.97);
+  transform:scale(0.98);
 }
 
 /* table */
 table{
-    width:100%;
-    margin-top:10px;
-    border-collapse:collapse;
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
 }
 
 th,td{
-    padding:10px;
-    font-size:13px;
-    border-bottom:1px solid rgba(255,255,255,0.06);
+  padding:10px;
+  border-bottom:1px solid #eee;
+  font-size:14px;
 }
 
 th{
-    text-align:left;
-    opacity:.5;
+  text-align:left;
+  color:#888;
 }
 
-td{
-    opacity:.9;
-}
-
-.badge{
-    padding:4px 10px;
-    background:rgba(255,255,255,0.08);
-    border-radius:8px;
+.center{
+  text-align:center;
 }
 
 /* delete button */
 .del{
-    background:#ff4d4d;
-    color:#fff;
-    border:none;
-    padding:6px 10px;
-    border-radius:8px;
-    cursor:pointer;
-}
-
-/* animations */
-@keyframes fadeUp{
-    from{opacity:0;transform:translateY(15px)}
-    to{opacity:1;transform:translateY(0)}
-}
-
-@keyframes fadeIn{
-    from{opacity:0}
-    to{opacity:1}
-}
-
-/* mobile */
-@media(max-width:600px){
-    .header h1{font-size:18px}
+  background:#ff3b3b;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="wrap">
 
-    <div class="header">
-        <h1>CONTROL PANEL</h1>
-        <p>panel tergacor 2k26 by dois</p>
-    </div>
+<div class="card">
+<h3>Add Email</h3>
+<input id="email" placeholder="email@gmail.com">
+<input id="limit" type="number" value="100">
+<button onclick="addEmail()">Add</button>
+</div>
 
-    <!-- ADD -->
-    <div class="card">
-        <h3>Add Email</h3>
-        <input id="email" placeholder="email@example.com">
-        <input id="limit" type="number" value="100">
-        <button onclick="addEmail()">Add Data</button>
-    </div>
+<div class="card">
+<h3>Database</h3>
 
-    <!-- TABLE -->
-    <div class="card">
-        <h3>Database</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Email</th>
-                    <th>Limit</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="list"></tbody>
-        </table>
-    </div>
+<table>
+<thead>
+<tr>
+<th>Email</th>
+<th class="center">Limit</th>
+<th class="center">Action</th>
+</tr>
+</thead>
+
+<tbody id="list"></tbody>
+</table>
+</div>
 
 </div>
 
 <script>
 
 const BASE = "/api/proxy";
-let data = [];
 
-/* LOAD */
-async function load(){
-    const res = await fetch(BASE+"?type=data");
-    const json = await res.json();
-    data = json || [];
+let currentData = [];
+
+/* =========================
+   REALTIME LOOP
+========================= */
+async function fetchData(){
+  try{
+    const res = await fetch(BASE+"?type=data&t="+Date.now());
+    const data = await res.json();
+
+    currentData = Array.isArray(data) ? data : [];
     render();
+
+  }catch(e){
+    console.log(e);
+  }
 }
 
-/* RENDER */
-function render(){
-    const el = document.getElementById("list");
-    el.innerHTML = "";
+setInterval(fetchData, 2500);
 
-    if(data.length === 0){
-        el.innerHTML = `<tr><td colspan="3" style="opacity:.4">Empty</td></tr>`;
-        return;
-    }
-
-    data.forEach(v=>{
-        el.innerHTML += `
-        <tr>
-            <td>${v.email}</td>
-            <td><span class="badge">${v.jumlahResult}</span></td>
-            <td><button class="del" onclick="del('${v.email}')">Delete</button></td>
-        </tr>`;
-    });
-}
-
-/* ADD */
+/* =========================
+   ADD
+========================= */
 async function addEmail(){
-    const email = document.getElementById("email").value;
-    const limit = document.getElementById("limit").value;
 
-    if(!email) return alert("isi email");
+  const email = document.getElementById("email").value.trim();
+  const limit = document.getElementById("limit").value;
 
-    let fd = new FormData();
-    fd.append("email", email);
-    fd.append("jumlahResult", limit);
+  if(!email) return alert("isi email");
 
-    await fetch(BASE+"?type=add",{
-        method:"POST",
-        body:fd
-    });
+  const body = `email=${encodeURIComponent(email)}&jumlahResult=${limit}`;
 
-    load();
+  await fetch(BASE+"?type=add",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/x-www-form-urlencoded"
+    },
+    body
+  });
+
+  document.getElementById("email").value = "";
+  fetchData();
 }
 
-/* DELETE */
+/* =========================
+   DELETE
+========================= */
 async function del(email){
 
-    let fd = new FormData();
-    fd.append("email", email);
+  const body = `email=${encodeURIComponent(email)}`;
 
-    await fetch(BASE+"?type=delete",{
-        method:"POST",
-        body:fd
-    });
+  await fetch(BASE+"?type=delete",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/x-www-form-urlencoded"
+    },
+    body
+  });
 
-    load();
+  fetchData();
 }
 
-/* INIT */
-load();
+/* =========================
+   RENDER
+========================= */
+function render(){
+
+  const el = document.getElementById("list");
+
+  if(!currentData.length){
+    el.innerHTML = `<tr><td colspan="3" class="center">Empty</td></tr>`;
+    return;
+  }
+
+  el.innerHTML = currentData.map(v=>`
+    <tr>
+      <td>${v.email}</td>
+      <td class="center">${v.jumlahResult}</td>
+      <td class="center">
+        <button class="del" onclick="del('${v.email}')">Delete</button>
+      </td>
+    </tr>
+  `).join("");
+}
+
+/* init */
+fetchData();
 
 </script>
 
